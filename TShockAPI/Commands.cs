@@ -194,19 +194,19 @@ namespace TShockAPI
 			{
 				AllowServer = false,
 				DoLog = false,
-				HelpText = "Logs you into an account."
+				HelpText = "Slouzi k prihlaseni na tvuj ucet."
 			});
 			add(new Command(Permissions.canchangepassword, PasswordUser, "password")
 			{
 				AllowServer = false,
 				DoLog = false,
-				HelpText = "Changes your account's password."
+				HelpText = "Slouzi ke zmene tveho hesla."
 			});
 			add(new Command(Permissions.canregister, RegisterUser, "register")
 			{
 				AllowServer = false,
 				DoLog = false,
-				HelpText = "Registers you an account."
+				HelpText = "Slouzi k registrovani noveho uctu hrace na tomto serveru."
 			});
 			#endregion
 			#region Admin Commands
@@ -517,19 +517,19 @@ namespace TShockAPI
 			});
 			add(new Command(Help, "help")
 			{
-				HelpText = "Lists commands or gives help on them."
+				HelpText = "Zobrazi napovedu k prikazum, ktere mas pristupne."
 			});
 			add(new Command(Motd, "motd")
 			{
-				HelpText = "Shows the message of the day."
+				HelpText = "Zobrazi text zpravy dne."
 			});
 			add(new Command(ListConnectedPlayers, "playing", "online", "who")
 			{
-				HelpText = "Shows the currently connected players."
+				HelpText = "Zobrazi aktualne pripojene hrace."
 			});
 			add(new Command(Rules, "rules")
 			{
-				HelpText = "Shows the server's rules."
+				HelpText = "Zobrazi pravidla serveru. Kompletni zneni pravidel je na webu!"
 			});
 
 			TShockCommands = new ReadOnlyCollection<Command>(tshockCommands);
@@ -560,7 +560,7 @@ namespace TShockAPI
 					call(new CommandArgs(cmdText, player, args));
 					return true;
 				}
-				player.SendErrorMessage("Invalid command entered. Type /help for a list of valid commands.");
+				player.SendErrorMessage("Zadan chybny prikaz. Napis /help pro vypis platnych prikazu.");
 				return true;
 			}
             foreach (Command cmd in cmds)
@@ -568,11 +568,11 @@ namespace TShockAPI
                 if (!cmd.CanRun(player))
                 {
                     TShock.Utils.SendLogs(string.Format("{0} tried to execute /{1}.", player.Name, cmdText), Color.PaleVioletRed, player);
-                    player.SendErrorMessage("You do not have access to this command.");
+                    player.SendErrorMessage("Pro tento prikaz nemas potrebna opravneni.");
                 }
                 else if (!cmd.AllowServer && !player.RealPlayer)
                 {
-                    player.SendErrorMessage("You must use this command in-game.");
+                    player.SendErrorMessage("K provedeni tohoto prikazu musis byt ve hre.");
                 }
                 else
                 {
@@ -672,9 +672,9 @@ namespace TShockAPI
 		{
 			if (args.Player.LoginAttempts > TShock.Config.MaximumLoginAttempts && (TShock.Config.MaximumLoginAttempts != -1))
 			{
-				Log.Warn(String.Format("{0} ({1}) had {2} or more invalid login attempts and was kicked automatically.",
+				Log.Warn(String.Format("{0} ({1}) provedl {2} nebo vice chybnych pokusu o prihlaseni abyl automaticky vykopnut.",
 					args.Player.IP, args.Player.Name, TShock.Config.MaximumLoginAttempts));
-				TShock.Utils.Kick(args.Player, "Too many invalid login attempts.");
+				TShock.Utils.Kick(args.Player, "Prilis mnoho chybnych pokusu o prihlaseni.");
 				return;
 			}
             
@@ -704,23 +704,23 @@ namespace TShockAPI
 				encrPass = TShock.Utils.HashPassword(args.Parameters[1]);
 				if (String.IsNullOrEmpty(args.Parameters[0]))
 				{
-					args.Player.SendErrorMessage("Bad login attempt.");
+					args.Player.SendErrorMessage("Chybne prihlaseni.");
 					return;
 				}
 			}
 			else
 			{
-				args.Player.SendErrorMessage("Syntax: /login - Logs in using your UUID and character name");
-				args.Player.SendErrorMessage("        /login <password> - Logs in using your password and character name");
-				args.Player.SendErrorMessage("        /login <username> <password> - Logs in using your username and password");
-				args.Player.SendErrorMessage("If you forgot your password, there is no way to recover it.");
+				args.Player.SendErrorMessage("Spravne zadani: /login - provede aut. prihlaseni pomoci tveho jmena");
+				args.Player.SendErrorMessage("        /login <heslo> - provede prihlaseni dle zadaneho hesla a jmena tve akt. postavy");
+				args.Player.SendErrorMessage("        /login <jmeno> <heslo> - provede prihlaseni dle zadanych udaju");
+				args.Player.SendErrorMessage("Jestlize zapomenes sve heslo, nemuzes jej nijak obnovit. Pozadej pripadne adminy.");
 				return;
 			}
 			try
 			{
 				if (user == null)
 				{
-					args.Player.SendErrorMessage("A user by that name does not exist.");
+					args.Player.SendErrorMessage("Uzivatel s timto jmenem neexistuje.");
 				}
 				else if (user.Password.ToUpper() == encrPass.ToUpper() ||
 						(usingUUID && user.UUID == args.Player.UUID && !TShock.Config.DisableUUIDLogin &&
@@ -758,9 +758,9 @@ namespace TShockAPI
 						args.Player.PlayerData.CopyCharacter(args.Player);
 						TShock.CharacterDB.InsertPlayerData(args.Player);
 					}
-					args.Player.SendSuccessMessage("Authenticated as " + user.Name + " successfully.");
+					args.Player.SendSuccessMessage("Uspesne jsi se overil jako " + user.Name + ".");
 
-					Log.ConsoleInfo(args.Player.Name + " authenticated successfully as user: " + user.Name + ".");
+					Log.ConsoleInfo("Hrac " + args.Player.Name + " se uspesne overil uctem: " + user.Name + ".");
 					if ((args.Player.LoginHarassed) && (TShock.Config.RememberLeavePos))
 					{
 						if (TShock.RememberedPos.GetLeavePos(args.Player.Name, args.Player.IP) != Vector2.Zero)
@@ -779,19 +779,19 @@ namespace TShockAPI
 				{
 					if (usingUUID && !TShock.Config.DisableUUIDLogin)
 					{
-						args.Player.SendErrorMessage("UUID does not match this character!");
+						args.Player.SendErrorMessage("UUID neodpovida teto postave!");
 					}
 					else
 					{
-						args.Player.SendErrorMessage("Invalid password!");
+						args.Player.SendErrorMessage("chybne heslo!");
 					}
-					Log.Warn(args.Player.IP + " failed to authenticate as user: " + user.Name + ".");
+					Log.Warn("Hrac " + args.Player.IP + " se chybne overil - ucet: " + user.Name + ".");
 					args.Player.LoginAttempts++;
 				}
 			}
 			catch (Exception ex)
 			{
-				args.Player.SendErrorMessage("There was an error processing your request.");
+				args.Player.SendErrorMessage("Ups. Pri zpracovani prikazu doslo k chybe.");
 				Log.Error(ex.ToString());
 			}
 		}
@@ -806,25 +806,25 @@ namespace TShockAPI
 					string encrPass = TShock.Utils.HashPassword(args.Parameters[0]);
 					if (user.Password.ToUpper() == encrPass.ToUpper())
 					{
-						args.Player.SendSuccessMessage("You changed your password!");
+						args.Player.SendSuccessMessage("Upsesne jsi zmenil sve heslo!");
 						TShock.Users.SetUserPassword(user, args.Parameters[1]); // SetUserPassword will hash it for you.
 						Log.ConsoleInfo(args.Player.IP + " named " + args.Player.Name + " changed the password of account " + user.Name + ".");
 					}
 					else
 					{
-						args.Player.SendErrorMessage("You failed to change your password!");
+						args.Player.SendErrorMessage("Zmena hesla se nezdarila!");
 						Log.ConsoleError(args.Player.IP + " named " + args.Player.Name + " failed to change password for account: " +
 										 user.Name + ".");
 					}
 				}
 				else
 				{
-					args.Player.SendErrorMessage("Not logged in or invalid syntax! Proper syntax: /password <oldpassword> <newpassword>");
+					args.Player.SendErrorMessage("Nejsi prihlasen nebo byl prikaz zadan chybne! Spravne zadani: /password <stare heslo> <nove heslo>");
 				}
 			}
 			catch (UserManagerException ex)
 			{
-				args.Player.SendErrorMessage("Sorry, an error occured: " + ex.Message + ".");
+				args.Player.SendErrorMessage("Promin, doslo k nejake necekane chybe: " + ex.Message + ".");
 				Log.ConsoleError("PasswordUser returned an error: " + ex);
 			}
 		}
@@ -847,7 +847,7 @@ namespace TShockAPI
 				}
 				else
 				{
-					args.Player.SendErrorMessage("Invalid syntax! Proper syntax: /register <password>");
+					args.Player.SendErrorMessage("Chybne zadani! Sprave zadani prikazu: /register <heslo>");
 					return;
 				}
 
@@ -856,22 +856,22 @@ namespace TShockAPI
 
                 if (TShock.Users.GetUserByName(user.Name) == null && user.Name != TSServerPlayer.AccountName) // Cheap way of checking for existance of a user
 				{
-					args.Player.SendSuccessMessage("Account \"{0}\" has been registered.", user.Name);
-					args.Player.SendSuccessMessage("Your password is {0}.", user.Password);
+                    args.Player.SendSuccessMessage("Ucet \"{0}\" byl uspesne registrovan. Znova se prihlas a muzes hrat.", user.Name);
+					args.Player.SendSuccessMessage("Tve heslo je {0}.", user.Password);
 					TShock.Users.AddUser(user);
 					TShock.CharacterDB.SeedInitialData(TShock.Users.GetUser(user));
-					Log.ConsoleInfo("{0} registered an account: \"{1}\".", args.Player.Name, user.Name);
+					Log.ConsoleInfo("{0} uspesne registroval ucet: \"{1}\".", args.Player.Name, user.Name);
 				}
 				else
 				{
-					args.Player.SendErrorMessage("Account " + user.Name + " has already been registered.");
-					Log.ConsoleInfo(args.Player.Name + " failed to register an existing account: " + user.Name);
+					args.Player.SendErrorMessage("Ucet na jmeno " + user.Name + " je jiz registrovan.");
+					Log.ConsoleInfo(args.Player.Name + " se pokusil registrovat ucet na jiz existujici jmeno: " + user.Name);
 				}
 			}
 			catch (UserManagerException ex)
 			{
-				args.Player.SendErrorMessage("Sorry, an error occured: " + ex.Message + ".");
-				Log.ConsoleError("RegisterUser returned an error: " + ex);
+                args.Player.SendErrorMessage("Promin, doslo k nejake necekane chybe: " + ex.Message + ".");
+                Log.ConsoleError("PasswordUser returned an error: " + ex); ;
 			}
 		}
 
@@ -2977,7 +2977,7 @@ namespace TShockAPI
 				case "name":
 					{
 						{
-							args.Player.SendMessage("Hit a block to get the name of the region", Color.Yellow);
+							args.Player.SendMessage("Pro zobrazeni jmena regionu uhod do nejakeho bloku, ktery do neho patri.", Color.Yellow);
 							args.Player.AwaitingName = true;
 							args.Player.AwaitingNameParameters = args.Parameters.Skip(1).ToArray();
 						}
@@ -2990,12 +2990,12 @@ namespace TShockAPI
 							int.TryParse(args.Parameters[1], out choice) &&
 							choice >= 1 && choice <= 2)
 						{
-							args.Player.SendMessage("Hit a block to Set Point " + choice, Color.Yellow);
+							args.Player.SendMessage("Uhod do bloku ktery bude bod " + choice, Color.Yellow);
 							args.Player.AwaitingTempPoint = choice;
 						}
 						else
 						{
-							args.Player.SendMessage("Invalid syntax! Proper syntax: /region set <1/2>", Color.Red);
+							args.Player.SendMessage("Chybne zadani prikazu! Sprave zadani: /region set <1/2>", Color.Red);
 						}
 						break;
 					}
@@ -3016,20 +3016,20 @@ namespace TShockAPI
 								{
 									args.Player.TempPoints[0] = Point.Zero;
 									args.Player.TempPoints[1] = Point.Zero;
-									args.Player.SendMessage("Set region " + regionName, Color.Yellow);
+									args.Player.SendMessage("Vytvoren region " + regionName, Color.Yellow);
 								}
 								else
 								{
-									args.Player.SendMessage("Region " + regionName + " already exists", Color.Red);
+									args.Player.SendMessage("Region " + regionName + " jiz existuje", Color.Red);
 								}
 							}
 							else
 							{
-								args.Player.SendMessage("Points not set up yet", Color.Red);
+								args.Player.SendMessage("Nejsou zvoleny body oznacujici region", Color.Red);
 							}
 						}
 						else
-							args.Player.SendMessage("Invalid syntax! Proper syntax: /region define <name>", Color.Red);
+                            args.Player.SendMessage("Chybne zadani prikazu! Sprave zadani: /region define <jmeno regionu>", Color.Red);
 						break;
 					}
 				case "protect":
@@ -3064,9 +3064,9 @@ namespace TShockAPI
 						{
 							string regionName = String.Join(" ", args.Parameters.GetRange(1, args.Parameters.Count - 1));
 							if (TShock.Regions.DeleteRegion(regionName))
-								args.Player.SendMessage("Deleted region " + regionName, Color.Yellow);
+								args.Player.SendMessage("Smazan region " + regionName, Color.Yellow);
 							else
-								args.Player.SendMessage("Could not find specified region", Color.Red);
+								args.Player.SendMessage("Nemohu najit zadany region", Color.Red);
 						}
 						else
 							args.Player.SendMessage("Invalid syntax! Proper syntax: /region delete <name>", Color.Red);
@@ -3521,7 +3521,7 @@ namespace TShockAPI
 		{
 			if (args.Parameters.Count > 1)
 			{
-				args.Player.SendErrorMessage("Invalid syntax! Proper syntax: /help <command/page>");
+				args.Player.SendErrorMessage("Chybne zadani! Spravne zadani: /help <prikaz/stranka>");
 				return;
 			}
 
@@ -3540,8 +3540,8 @@ namespace TShockAPI
 				PaginationTools.SendPage(args.Player, pageNumber, PaginationTools.BuildLinesFromTerms(cmdNames),
 					new PaginationTools.Settings
 					{
-						HeaderFormat = "Commands ({0}/{1}):",
-						FooterFormat = "Type /help {0} for more."
+						HeaderFormat = "Dostupne prikazy ({0}/{1}):",
+						FooterFormat = "Zadej /help {0} pro dalsi stranku vypisu."
 					});
 			}
 			else
@@ -3555,12 +3555,12 @@ namespace TShockAPI
 				Command command = ChatCommands.Find(c => c.Names.Contains(commandName));
 				if (command == null)
 				{
-					args.Player.SendErrorMessage("Invalid command.");
+					args.Player.SendErrorMessage("Chybny prikaz.");
 					return;
 				}
 				if (!command.CanRun(args.Player))
 				{
-					args.Player.SendErrorMessage("You do not have access to this command.");
+					args.Player.SendErrorMessage("Nemas potrebna opravneni pro tento prikaz.");
 					return;
 				}
 
@@ -3600,22 +3600,22 @@ namespace TShockAPI
 			}
 			if (invalidUsage)
 			{
-				args.Player.SendErrorMessage("Invalid usage, proper usage: /who [-i] [pagenumber]");
+				args.Player.SendErrorMessage("Chybne pouziti prikazu. Napis: /who [-i] [cislostranky]");
 				return;
 			}
 			if (displayIdsRequested && !args.Player.Group.HasPermission(Permissions.seeids))
 			{
-				args.Player.SendErrorMessage("You don't have the required permission to list player ids.");
+				args.Player.SendErrorMessage("Nemas potrebna opravneni pro vypis hracskych id.");
 				return;
 			}
 
-			args.Player.SendSuccessMessage("Online Players ({0}/{1})", TShock.Utils.ActivePlayers(), TShock.Config.MaxSlots);
+			args.Player.SendSuccessMessage("Hraci online ({0}/{1})", TShock.Utils.ActivePlayers(), TShock.Config.MaxSlots);
 			PaginationTools.SendPage(
 				args.Player, pageNumber, PaginationTools.BuildLinesFromTerms(TShock.Utils.GetPlayers(displayIdsRequested)), 
 				new PaginationTools.Settings 
 				{
 					IncludeHeader = false,
-					FooterFormat = string.Format("Type /who {0}{{0}} for more.", displayIdsRequested ? "-i " : string.Empty)
+					FooterFormat = string.Format("Zadej /who {0}{{0}} pro vice.", displayIdsRequested ? "-i " : string.Empty)
 				}
 			);
 		}

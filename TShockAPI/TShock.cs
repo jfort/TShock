@@ -283,19 +283,25 @@ namespace TShockAPI
 	    private static void getTShockAscii()
 	    {
 // ReSharper disable LocalizableElement
-	        Console.Write("              ___          ___          ___          ___          ___ \n" +
-	                      "     ___     /  /\\        /__/\\        /  /\\        /  /\\        /__/|    \n" +
-	                      "    /  /\\   /  /:/_       \\  \\:\\      /  /::\\      /  /:/       |  |:|    \n" +
-	                      "   /  /:/  /  /:/ /\\       \\__\\:\\    /  /:/\\:\\    /  /:/        |  |:|    \n" +
-	                      "  /  /:/  /  /:/ /::\\  ___ /  /::\\  /  /:/  \\:\\  /  /:/  ___  __|  |:|    \n" +
-	                      " /  /::\\ /__/:/ /:/\\:\\/__/\\  /:/\\:\\/__/:/ \\__\\:\\/__/:/  /  /\\/__/\\_|:|____\n" +
-	                      "/__/:/\\:\\\\  \\:\\/:/~/:/\\  \\:\\/:/__\\/\\  \\:\\ /  /:/\\  \\:\\ /  /:/\\  \\:\\/:::::/\n" +
-	                      "\\__\\/  \\:\\\\  \\::/ /:/  \\  \\::/      \\  \\:\\  /:/  \\  \\:\\  /:/  \\  \\::/~~~~ \n" +
-	                      "     \\  \\:\\\\__\\/ /:/    \\  \\:\\       \\  \\:\\/:/    \\  \\:\\/:/    \\  \\:\\     \n" +
-	                      "      \\__\\/  /__/:/      \\  \\:\\       \\  \\::/      \\  \\::/      \\  \\:\\    \n" +
-	                      "             \\__\\/        \\__\\/        \\__\\/        \\__\\/        \\__\\/    \n" +
-	                      "");
-            Console.WriteLine("TShock for Terraria is open & free software. If you paid, you were scammed.");
+            Console.Write("                                                              \n" +
+                          "      _______                       _                         \n" +
+                          "     |__   __|                     (_)                        \n" +
+                          "        | | ___ _ __ _ __ __ _ _ __ _  ___   ___ ____         \n" +
+                          "        | |/ _ \\ '__| '__/ _` | '__| |/ _ \\ / __|_  /         \n" +
+                          "        | |  __/ |  | | | (_| | |  | |  __/| (__ / /          \n" +
+                          "      _ |_|\\___|_|  |_|__\\__,_|_|  |_|\\___(_)___/___|         \n" +
+                          "     | |           |__   __|                                  \n" +
+                          "     | |__  _   _     | |___  ___ _ ____   _____ _ __         \n" +
+                          "     | '_ \\| | | |    | / __|/ _ \\ '__\\ \\ / / _ \\ '__|        \n" +
+                          "     | |_) | |_| |    | \\__ \\  __/ |   \\ V /  __/ |           \n" +
+                          "     |_.__/ \\__, |    |_|___/\\___|_|    \\_/ \\___|_|           \n" +
+                          "             __/ |                                            \n" +
+                          "            |___/                                             \n" +
+                          "");
+            Console.WriteLine("Terrarie.cz - prvni cesky server pro hru Terraria.");
+            Console.WriteLine("Clensky server skupiny TServer.");
+            Console.WriteLine("Neni povoleno vytvaret kopie teto verze server nebo na teto verzi serveru provozovat jine vlastni verejne servery!");
+
 // ReSharper restore LocalizableElement
 	    }
 
