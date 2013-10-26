@@ -839,11 +839,13 @@ namespace TShockAPI
 				{
 					user.Name = args.Player.Name;
 					user.Password = args.Parameters[0];
+                    user.RegisterIp = args.Player.IP;
 				}
 				else if (args.Parameters.Count == 2 && TShock.Config.AllowRegisterAnyUsername)
 				{
 					user.Name = args.Parameters[0];
 					user.Password = args.Parameters[1];
+                    user.RegisterIp = args.Player.IP;
 				}
 				else
 				{
@@ -853,19 +855,21 @@ namespace TShockAPI
 
 				user.Group = TShock.Config.DefaultRegistrationGroupName; // FIXME -- we should get this from the DB. --Why?
 				user.UUID = args.Player.UUID;
+                args.Player.SendSuccessMessage("IP: " + user.RegisterIp.ToString());
 
                 if (TShock.Users.GetUserByName(user.Name) == null && user.Name != TSServerPlayer.AccountName) // Cheap way of checking for existance of a user
-				{
+				if  (TShock.Users.GetUserByRegisteredIP(user.RegisterIp.ToString()) == null) 
+                {
                     args.Player.SendSuccessMessage("Ucet \"{0}\" byl uspesne registrovan. Znova se prihlas a muzes hrat.", user.Name);
 					args.Player.SendSuccessMessage("Tve heslo je {0}.", user.Password);
-					TShock.Users.AddUser(user);
+					TShock.Users.AddUser(user); 
 					TShock.CharacterDB.SeedInitialData(TShock.Users.GetUser(user));
 					Log.ConsoleInfo("{0} uspesne registroval ucet: \"{1}\".", args.Player.Name, user.Name);
 				}
 				else
 				{
-					args.Player.SendErrorMessage("Ucet na jmeno " + user.Name + " je jiz registrovan.");
-					Log.ConsoleInfo(args.Player.Name + " se pokusil registrovat ucet na jiz existujici jmeno: " + user.Name);
+					args.Player.SendErrorMessage("Ucet na toto jmeno nebo tvoji IP adresu je jiz registrovan.");
+					Log.ConsoleInfo(args.Player.Name + " se pokusil registrovat ucet na jiz existujici jmeno nebo IP adresu");
 				}
 			}
 			catch (UserManagerException ex)

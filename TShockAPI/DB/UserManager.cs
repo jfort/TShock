@@ -24,6 +24,7 @@ using System.Linq;
 using MySql.Data.MySqlClient;
 using System.Text.RegularExpressions;
 
+
 namespace TShockAPI.DB
 {
 	public class UserManager
@@ -42,7 +43,8 @@ namespace TShockAPI.DB
 			                         new SqlColumn("Usergroup", MySqlDbType.Text),
 									 new SqlColumn("Registered", MySqlDbType.Text),
                                      new SqlColumn("LastAccessed", MySqlDbType.Text),
-                                     new SqlColumn("KnownIPs", MySqlDbType.Text)
+                                     new SqlColumn("KnownIPs", MySqlDbType.Text),
+                                     new SqlColumn("RegisterIP", MySqlDbType.Text)
 				);
 			var creator = new SqlTableCreator(db,
 			                                  db.GetSqlType() == SqlType.Sqlite
@@ -60,11 +62,11 @@ namespace TShockAPI.DB
 			if (!TShock.Groups.GroupExists(user.Group))
 				throw new GroupNotExistsException(user.Group);
 
-			int ret;
+			int ret = 0;
 			try
 			{
-				ret = database.Query("INSERT INTO Users (Username, Password, UUID, UserGroup, Registered) VALUES (@0, @1, @2, @3, @4);", user.Name,
-								   TShock.Utils.HashPassword(user.Password), user.UUID, user.Group, DateTime.UtcNow.ToString("s"));
+				ret = database.Query("INSERT INTO Users (Username, Password, UUID, UserGroup, Registered, RegisterIp) VALUES (@0, @1, @2, @3, @4, @5);", user.Name,
+                                   TShock.Utils.HashPassword(user.Password), user.UUID, user.Group, DateTime.UtcNow.ToString("s"),user.RegisterIp);
 			}
 			catch (Exception ex)
 			{
@@ -264,6 +266,44 @@ namespace TShockAPI.DB
 			throw new UserNotExistException(user.Name);
 		}
 
+
+        public User GetUserByRegisteredIP(String IP)
+        {
+            User user = new User();
+            string query;
+            int resultCounter = 0;
+            Boolean multiple = false;
+           
+            query = "SELECT id FROM Users WHERE RegisterIp='"+IP+"'";   
+
+            try
+            {
+                using (var result = database.QueryReader(query))
+                {
+                    if (result.Read())
+                    {
+                        user = LoadUserFromResult(user, result);
+                        
+                        // Check for multiple matches
+                        if (!result.Read())
+                            return user;
+                        multiple = true;
+                        resultCounter++;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new UserManagerException("GetUser SQL returned an error (" + ex.Message + ")", ex);
+            }
+            if (multiple)
+                throw new UserMultipleFoundException(resultCounter);
+
+            return null;
+        }
+
+
+
 		public List<User> GetUsers()
 		{
 			try
@@ -295,6 +335,7 @@ namespace TShockAPI.DB
 			user.Registered = result.Get<string>("Registered");
             user.LastAccessed = result.Get<string>("LastAccessed");
             user.KnownIps = result.Get<string>("KnownIps");
+            user.RegisterIp = result.Get<string>("RegisterIp");
 			return user;
 		}
 	}
@@ -309,8 +350,9 @@ namespace TShockAPI.DB
 		public string Registered { get; set; }
         public string LastAccessed { get; set; }
         public string KnownIps { get; set; }
+        public string RegisterIp { get; set; }
 
-		public User(string name, string pass, string uuid, string group, string registered, string last, string known)
+		public User(string name, string pass, string uuid, string group, string registered, string last, string known, string registerip)
 		{
 			Name = name;
 			Password = pass;
@@ -319,6 +361,7 @@ namespace TShockAPI.DB
 			Registered = registered;
 		    LastAccessed = last;
 		    KnownIps = known;
+            RegisterIp = registerip;
 		}
 
 		public User()
@@ -330,6 +373,7 @@ namespace TShockAPI.DB
 			Registered = "";
             LastAccessed = "";
             KnownIps = "";
+            RegisterIp = "";
 		}
 	}
 
@@ -364,6 +408,16 @@ namespace TShockAPI.DB
 		{
 		}
 	}
+
+    [Serializable]
+    public class UserMultipleFoundException : UserManagerException
+    {
+        public UserMultipleFoundException(int resultCount)
+            : base("Multiple users found. Count of users: " + resultCount)
+        {
+        }
+    }
+
 
 	[Serializable]
 	public class GroupNotExistsException : UserManagerException
