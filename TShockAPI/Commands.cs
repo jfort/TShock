@@ -117,7 +117,7 @@ namespace TShockAPI
 			AllowServer = true;
 			CommandDelegate = cmd;
 			DoLog = true;
-			HelpText = "No help available.";
+			HelpText = "Napoveda neni k dispozici.";
 			Names = new List<string>(names);
 			Permissions = new List<string>();
 		}
