@@ -316,6 +316,15 @@ namespace TShockAPI
 		[Description("Player can chat")] 
 		public static readonly string canchat = "tshock.canchat";
 
+        [Description("Admin muze potvrdit registraci hrace")]
+        public static readonly string potvrzeniregistrace = "nase.potvrzeniregistrace";
+
+        [Description("Admin muze vypsat verzi serveru")]
+        public static readonly string verze = "nase.verze";
+
+        [Description("Admin muze registrovat hrace")]
+        public static readonly string rucniregistrace = "nase.rucniregistrace";
+
         /// <summary>
         /// Lists all commands associated with a given permission
         /// </summary>

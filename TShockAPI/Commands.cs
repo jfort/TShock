@@ -208,6 +208,20 @@ namespace TShockAPI
 				DoLog = false,
 				HelpText = "Slouzi k registrovani noveho uctu hrace na tomto serveru."
 			});
+            add(new Command(Permissions.potvrzeniregistrace, potvrzeniregistrace, "potvrdit")
+            {
+                AllowServer = false,
+                DoLog = false,
+                HelpText = "Prikaz potvrdi registraci uvedeneho hrace."
+            });
+            add(new Command(Permissions.rucniregistrace, rucniregistrace, "registruj")
+            {
+                AllowServer = false,
+                DoLog = false,
+                HelpText = "Provede rucni registraci hrace dle zadanych informaci."
+            });
+
+
 			#endregion
 			#region Admin Commands
 			add(new Command(Permissions.ban, Ban, "ban")
@@ -302,7 +316,7 @@ namespace TShockAPI
 			{
 				HelpText = "Changes the server password."
 			});
-			add(new Command(Permissions.maintenance, GetVersion, "version")
+			add(new Command(Permissions.verze, GetVersion, "version")
 			{
 				HelpText = "Shows the TShock version."
 			});
@@ -878,6 +892,81 @@ namespace TShockAPI
                 Log.ConsoleError("PasswordUser returned an error: " + ex); ;
 			}
 		}
+
+        private static void potvrzeniregistrace(CommandArgs args)
+        {
+            // This guy needs to be here so that people don't get exceptions when they type /user
+            if (args.Parameters.Count < 1)
+            {
+                args.Player.SendErrorMessage("Chybne zadany prikaz. Zadej: /potvrdit <jmenohrace>");
+                return;
+            }
+
+            string hrac = args.Parameters[0];
+            var user = new User();
+            user = TShock.Users.GetUserByName(hrac);
+
+            try
+            {
+                if (user.Group == "default")
+                {
+                    TShock.Users.SetUserGroup(user, "registered");
+                    args.Player.SendSuccessMessage("Registrace hrace " + user.Name + " byla potvrzena!");
+                    Log.ConsoleInfo("Registrace hrace " + user.Name + " byla potvrzena!");
+                }
+                else
+                {
+                    args.Player.SendSuccessMessage("Registrace hrace " + user.Name + " NEBYLA provedena. Je jiz registrovan!");
+                    args.Player.SendSuccessMessage("Stavajici skupina:" + args.Player.Group.Name);
+                    Log.ConsoleInfo("Registrace hrace " + user.Name + " NEBYLA provedena. Je jiz registrovan!");
+                }
+            }
+            catch (UserManagerException ex)
+            {
+                args.Player.SendMessage(ex.Message, Color.Green);
+                Log.ConsoleError(ex.ToString());
+            }
+        }
+
+        private static void rucniregistrace(CommandArgs args)
+        {
+
+
+            try
+            {
+                if (args.Parameters.Count > 0)
+                {
+                    var namepass = args.Parameters[0].Split(':');
+                    var user = new User();
+
+                    if (namepass.Length == 2)
+                    {
+                        user.Name = namepass[0];
+                        user.Password = namepass[1];
+                        user.Group = "registered";
+
+                        if (TShock.Users.GetUserByName(user.Name) != null)
+                        {
+                            args.Player.SendErrorMessage("Chyba: hrac s timto jmenem jiz existuje! Nelze registrovat.");
+                            return;
+                        }
+
+                        args.Player.SendSuccessMessage("Ucet " + user.Name + " byl uspesne registrovan. Prirazena skupina " + user.Group + ".");
+                        TShock.Users.AddUser(user);
+                        Log.ConsoleInfo(args.Player.Name + " registroval ucet " + user.Name + ". Prirazena skupina " + user.Group + ".");
+                    }
+                }
+                else
+                {
+                    args.Player.SendErrorMessage("Chybne zadani prikazu. Spravne zadani: /registruj <jmeno>:<heslo>.");
+                }
+            }
+            catch (UserManagerException ex)
+            {
+                args.Player.SendErrorMessage(ex.Message);
+                Log.ConsoleError(ex.ToString());
+            }
+        }
 
 		private static void ManageUsers(CommandArgs args)
 		{

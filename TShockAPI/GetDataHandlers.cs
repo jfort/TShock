@@ -1587,18 +1587,18 @@ namespace TShockAPI
 									   args.Player.Group.Name, args.Player.Country, TShock.Utils.ActivePlayers(),
 									   TShock.Config.MaxSlots));
 				if (!args.Player.SilentJoinInProgress)
-					TShock.Utils.Broadcast(string.Format("{0} ({1}) has joined.", args.Player.Name, args.Player.Country), Color.Yellow);
+					TShock.Utils.Broadcast(string.Format("{0} ({1}) se pripojil do hry.", args.Player.Name, args.Player.Country), Color.Yellow);
 			}
 			else
 			{
 				Log.Info(string.Format("{0} ({1}) from '{2}' group joined. ({3}/{4})", args.Player.Name, args.Player.IP,
 									   args.Player.Group.Name, TShock.Utils.ActivePlayers(), TShock.Config.MaxSlots));
 				if (!args.Player.SilentJoinInProgress)
-					TShock.Utils.Broadcast(args.Player.Name + " has joined.", Color.Yellow);
+                    TShock.Utils.Broadcast(args.Player.Name + " se pripojil do hry.", Color.Yellow);
 			}
 
 			if (TShock.Config.DisplayIPToAdmins)
-				TShock.Utils.SendLogs(string.Format("{0} has joined. IP: {1}", args.Player.Name, args.Player.IP), Color.Blue);
+                TShock.Utils.SendLogs(string.Format("{0} se pripojil do hry. IP: {1}", args.Player.Name, args.Player.IP), Color.Blue);
 
 			return false;
 		}
@@ -2861,7 +2861,7 @@ namespace TShockAPI
 
 			if (!args.Player.Group.HasPermission(Permissions.movenpc))
 			{
-				args.Player.SendMessage("You do not have permission to relocate NPCs.", Color.Red);
+				args.Player.SendMessage("Nemas pravo premistnit toto NPC.", Color.Red);
 				args.Player.SendData(PacketTypes.UpdateNPCHome, "", id, Main.npc[id].homeTileX, Main.npc[id].homeTileY,
 									 Convert.ToByte(Main.npc[id].homeless));
 				return true;
@@ -3226,12 +3226,12 @@ namespace TShockAPI
 			}
 			if (spawnboss && !args.Player.Group.HasPermission(Permissions.summonboss))
 			{
-				args.Player.SendMessage("You don't have permission to summon a boss.", Color.Red);
+				args.Player.SendMessage("Nemas pravo povolat bosse.", Color.Red);
 				return true;
 			}
 			if (invasion && !args.Player.Group.HasPermission(Permissions.startinvasion))
 			{
-				args.Player.SendMessage("You don't have permission to start an invasion.", Color.Red);
+				args.Player.SendMessage("Nemas pravo vyvolat invazi.", Color.Red);
 				return true;
 			}
 			if (!spawnboss && !invasion)
@@ -3244,23 +3244,23 @@ namespace TShockAPI
 			switch (Type)
 			{
 				case -4:
-					boss = "a pumpkin invasion";
+					boss = "invazi dyni.";
 					break;
 				case -3:
-					boss = "the pirates";
+					boss = "piraty.";
 					break;
 				case -2:
-					boss = "the Snow Legion";
+					boss = "sneznou legii.";
 					break;
 				case -1:
-					boss = "a Goblin Invasion";
+					boss = "invazi goblinu.";
 					break;
 				default:
 					boss = String.Format("the {0}", npc.name);
 					break;
 			}
 
-			TShock.Utils.SendLogs(string.Format("{0} summoned {1}.", args.Player.Name, boss), Color.PaleVioletRed, args.Player);
+			TShock.Utils.SendLogs(string.Format("{0} povolal {1}.", args.Player.Name, boss), Color.PaleVioletRed, args.Player);
 			return false;
 		}
 
@@ -3377,7 +3377,7 @@ namespace TShockAPI
 
 				if (!isNPC && !args.Player.Group.HasPermission(Permissions.rod))
 				{
-					args.Player.SendErrorMessage("You do not have permission to teleport.");
+					args.Player.SendErrorMessage("Na teleport nemas potrebna opravneni.");
 					args.Player.Teleport(args.TPlayer.position.X, args.TPlayer.position.Y);
 					return true;
 				}

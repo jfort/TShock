@@ -43,7 +43,7 @@ namespace TShockAPI
 	public class TShock : TerrariaPlugin
 	{
 		public static readonly Version VersionNum = Assembly.GetExecutingAssembly().GetName().Version;
-		public static readonly string VersionCodename = "And the great beast rose from its slumber, ready to take on the world again.";
+		public static readonly string VersionCodename = "Zakladni testovaci verze serveru Terrarie.cz.";
 
 		public static string SavePath = "tshock";
 		private const string LogFormatDefault = "yyyy-MM-dd_HH-mm-ss";
@@ -857,7 +857,7 @@ namespace TShockAPI
 			    {
 			        DateTime exp;
 			        string duration = DateTime.TryParse(ban.Expiration, out exp) ? String.Format("until {0}", exp.ToString("G")) : "forever";
-			        Utils.ForceKick(player, string.Format("You are banned {0}: {1}", duration, ban.Reason), true, false);
+			        Utils.ForceKick(player, string.Format("Jsi zabanovan na {0}: {1}", duration, ban.Reason), true, false);
 					args.Handled = true;
 			        return;
 			    }
@@ -898,7 +898,7 @@ namespace TShockAPI
 			
 			if (Config.KickEmptyUUID && String.IsNullOrWhiteSpace(player.UUID))
 			{
-				Utils.ForceKick(player, "Your client did not send a UUID, this server is not configured to accept such a client");
+				Utils.ForceKick(player, "Tvuj klient neodesila identifikaci UUID. Tento server UUID vyzaduje.");
 			}
 
 			Ban ban = null;
@@ -925,7 +925,7 @@ namespace TShockAPI
 			    {
 			        DateTime exp;
 			        string duration = DateTime.TryParse(ban.Expiration, out exp) ? String.Format("until {0}", exp.ToString("G")) : "forever";
-			        Utils.ForceKick(player, string.Format("You are banned {0}: {1}", duration, ban.Reason), true, false);
+                    Utils.ForceKick(player, string.Format("Jsi zabanovan na {0}: {1}", duration, ban.Reason), true, false);
 					args.Handled = true;
 			    }
 			}            
@@ -941,9 +941,9 @@ namespace TShockAPI
 			{
 				if (!tsplr.SilentKickInProgress && tsplr.State >= 3)
 				{
-					Utils.Broadcast(tsplr.Name + " left", Color.Yellow);
+					Utils.Broadcast(tsplr.Name + " odesel", Color.Yellow);
 				}
-				Log.Info(string.Format("{0} disconnected.", tsplr.Name));
+				Log.Info(string.Format("{0} se odpoji.", tsplr.Name));
 
 				if (tsplr.IsLoggedIn && !tsplr.IgnoreActionsForClearingTrashCan && TShock.Config.ServerSideCharacter && (!tsplr.Dead || tsplr.TPlayer.difficulty != 2))
 				{
@@ -1030,7 +1030,7 @@ namespace TShockAPI
 					tsplr.SendMessage(msg, tsplr.Group.R, tsplr.Group.G, tsplr.Group.B);
 
 					TSPlayer.Server.SendMessage(msg, tsplr.Group.R, tsplr.Group.G, tsplr.Group.B);
-					Log.Info(string.Format("Broadcast: {0}", msg));
+					Log.Info(string.Format("Info: {0}", msg));
 					args.Handled = true;
 				}
 			}
@@ -1068,7 +1068,7 @@ namespace TShockAPI
 																  player.Group.Name, player.UserAccountName));
 					}
 				}
-				TSPlayer.Server.SendInfoMessage(string.Format("{0} players connected.", count));
+				TSPlayer.Server.SendInfoMessage(string.Format("{0} pripojenych hracu.", count));
 			}
 			else if (args.Command == "autosave")
 			{
@@ -1488,7 +1488,7 @@ namespace TShockAPI
 
 					if (((DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond) - player.BPm) > 2000)
 					{
-						player.SendMessage("You do not have permission to build!", Color.Red);
+						player.SendMessage("Nemas pravo stavet! Uz jsi se registroval?", Color.Red);
 						player.BPm = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
 					}
 					return true;
@@ -1502,7 +1502,7 @@ namespace TShockAPI
 
 				if (((DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond) - player.BPm) > 2000)
 				{
-					player.SendMessage("You do not have permission to build!", Color.Red);
+                    player.SendMessage("Nemas pravo stavet! Uz jsi se registroval?", Color.Red);
 					player.BPm = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
 				}
 				return true;
@@ -1513,7 +1513,7 @@ namespace TShockAPI
 			{
 				if (((DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond) - player.RPm) > 2000)
 				{
-					player.SendMessage("This region is protected from changes.", Color.Red);
+					player.SendMessage("Tento region je chranen pred zmenami.", Color.Red);
 					player.RPm = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
 				}
 				return true;
@@ -1525,7 +1525,7 @@ namespace TShockAPI
 				{
 					if (((DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond) - player.WPm) > 2000)
 					{
-						player.SendMessage("The world is protected from changes.", Color.Red);
+						player.SendMessage("Cely svet je nyni chranen pred zmenami.", Color.Red);
 						player.WPm = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
 					}
 					return true;
@@ -1540,7 +1540,7 @@ namespace TShockAPI
 					{
 						if (((DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond) - player.SPm) > 2000)
 						{
-							player.SendMessage("Spawn is protected from changes.", Color.Red);
+							player.SendMessage("Spawn je chranen pred zmenami.", Color.Red);
 							player.SPm = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
 						}
 						return true;
@@ -1557,7 +1557,7 @@ namespace TShockAPI
 			{
 				if (((DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond) - player.BPm) > 2000)
 				{
-					player.SendMessage("You do not have permission to build!", Color.Red);
+					player.SendMessage("Nemas pravo stavet! Jsi registrovany a potvrzeny?", Color.Red);
 					player.BPm = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
 				}
 				return true;
@@ -1568,7 +1568,7 @@ namespace TShockAPI
 			{
 				if (((DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond) - player.RPm) > 2000)
 				{
-					player.SendMessage("This region is protected from changes.", Color.Red);
+					player.SendMessage("Tento region je chraneny pred zmenami.", Color.Red);
 					player.RPm = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
 				}
 				return true;
@@ -1580,7 +1580,7 @@ namespace TShockAPI
 				{
 					if (((DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond) - player.WPm) > 2000)
 					{
-						player.SendMessage("The world is protected from changes.", Color.Red);
+                        player.SendMessage("Cely svet je nyni chranen pred zmenami.", Color.Red);
 						player.WPm = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
 					}
 					return true;
@@ -1595,7 +1595,7 @@ namespace TShockAPI
 					{
 						if (((DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond) - player.SPm) > 1000)
 						{
-							player.SendMessage("Spawn is protected from changes.", Color.Red);
+                            player.SendMessage("Spawn je chranen pred zmenami.", Color.Red);
 							player.SPm = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
 						}
 						return true;
