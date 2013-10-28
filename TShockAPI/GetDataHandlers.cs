@@ -1587,14 +1587,80 @@ namespace TShockAPI
 									   args.Player.Group.Name, args.Player.Country, TShock.Utils.ActivePlayers(),
 									   TShock.Config.MaxSlots));
 				if (!args.Player.SilentJoinInProgress)
-					TShock.Utils.Broadcast(string.Format("{0} ({1}) se pripojil do hry.", args.Player.Name, args.Player.Country), Color.Yellow);
+                    switch (args.Player.Group.Name)
+                       {
+                        case "superadmin":
+                               {
+                                   TShock.Utils.Broadcast(string.Format("Server admin {0} ({1}) se pripojil do hry.", args.Player.Name, args.Player.Country), Color.Red);
+                                   break;
+                               }
+                        case "trustedadmin":
+                            {
+                                TShock.Utils.Broadcast(string.Format("Hlavni admin {0} ({1}) se pripojil do hry.", args.Player.Name, args.Player.Country), Color.Red);
+                                break;
+                            }
+                        case "newadmin":
+                            {
+                                TShock.Utils.Broadcast(string.Format("Kancler {0} ({1}) se pripojil do hry.", args.Player.Name, args.Player.Country), Color.Aqua);
+                                break;
+                            }
+                        case "admin":
+                            {
+                                TShock.Utils.Broadcast(string.Format("Admin {0} ({1}) se pripojil do hry.", args.Player.Name, args.Player.Country), Color.Red);
+                                break;
+                            }
+                        case "registered":
+                            {
+                                TShock.Utils.Broadcast(string.Format("Hrac {0} ({1}) se pripojil do hry.", args.Player.Name, args.Player.Country), Color.Yellow);
+                                break;
+                            }
+                        default:
+                            {
+                                TShock.Utils.Broadcast(string.Format("{0} ({1}) se pripojil do hry.", args.Player.Name, args.Player.Country), Color.Yellow);
+                                break;
+                            }
+                        }
+					
+                
 			}
 			else
 			{
 				Log.Info(string.Format("{0} ({1}) from '{2}' group joined. ({3}/{4})", args.Player.Name, args.Player.IP,
 									   args.Player.Group.Name, TShock.Utils.ActivePlayers(), TShock.Config.MaxSlots));
 				if (!args.Player.SilentJoinInProgress)
-                    TShock.Utils.Broadcast(args.Player.Name + " se pripojil do hry.", Color.Yellow);
+                    switch (args.Player.Group.Name)
+                    {
+                        case "superadmin":
+                            {
+                                TShock.Utils.Broadcast(string.Format("Server admin {0} se pripojil do hry.", args.Player.Name), Color.Red);
+                                break;
+                            }
+                        case "trustedadmin":
+                            {
+                                TShock.Utils.Broadcast(string.Format("Hlavni admin {0} se pripojil do hry.", args.Player.Name), Color.Red);
+                                break;
+                            }
+                        case "newadmin":
+                            {
+                                TShock.Utils.Broadcast(string.Format("Kancler {0} se pripojil do hry.", args.Player.Name), Color.Aqua);
+                                break;
+                            }
+                        case "admin":
+                            {
+                                TShock.Utils.Broadcast(string.Format("Admin {0} se pripojil do hry.", args.Player.Name), Color.Red);
+                                break;
+                            }
+                        case "registered":
+                            {
+                                TShock.Utils.Broadcast(string.Format("Hrac {0} se pripojil do hry.", args.Player.Name), Color.Yellow);
+                                break;
+                            }
+                        default:
+                            {
+                                TShock.Utils.Broadcast(string.Format("{0} se pripojil do hry.", args.Player.Name), Color.Yellow);
+                                break;
+                            }
+                    }
 			}
 
 			if (TShock.Config.DisplayIPToAdmins)
