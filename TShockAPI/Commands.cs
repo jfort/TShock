@@ -133,7 +133,7 @@ namespace TShockAPI
 			}
 			catch (Exception e)
 			{
-				ply.SendErrorMessage("Command failed, check logs for more details.");
+				ply.SendErrorMessage("Chybny prikaz. Podivej se do logu pro vice podrobnosti o chybe.");
 				Log.Error(e.ToString());
 			}
 
@@ -291,6 +291,7 @@ namespace TShockAPI
 				HelpText = "Spawns fireworks at a player."
 			});
 			#endregion
+
 			#region Configuration Commands
 			add(new Command(Permissions.maintenance, CheckUpdates, "checkupdates")
 			{
@@ -330,6 +331,7 @@ namespace TShockAPI
 				HelpText = "Manages the server whitelist."
 			});
 			#endregion
+
 			#region Item Commands
 			add(new Command(Permissions.item, Give, "give", "g")
 			{
@@ -341,6 +343,7 @@ namespace TShockAPI
 				HelpText = "Gives yourself an item."
 			});
 			#endregion
+
 			#region NPC Commands
 			add(new Command(Permissions.butcher, Butcher, "butcher")
 			{
@@ -2964,23 +2967,23 @@ namespace TShockAPI
 			{
 				case "day":
 					TSPlayer.Server.SetTime(true, 150.0);
-					TSPlayer.All.SendInfoMessage("{0} set the time to day.", args.Player.Name);
+					TSPlayer.All.SendInfoMessage("{0} nastavil denni dobu na den.", args.Player.Name);
 					break;
 				case "night":
 					TSPlayer.Server.SetTime(false, 0.0);
-					TSPlayer.All.SendInfoMessage("{0} set the time to night.", args.Player.Name);
+                    TSPlayer.All.SendInfoMessage("{0} nastavil denni dobu na noc.", args.Player.Name);
 					break;
 				case "dusk":
 					TSPlayer.Server.SetTime(false, 0.0);
-					TSPlayer.All.SendInfoMessage("{0} set the time to dusk.", args.Player.Name);
+					TSPlayer.All.SendInfoMessage("{0} nastavil denni dobu na vecer.", args.Player.Name);
 					break;
 				case "noon":
 					TSPlayer.Server.SetTime(true, 27000.0);
-					TSPlayer.All.SendInfoMessage("{0} set the time to noon.", args.Player.Name);
+                    TSPlayer.All.SendInfoMessage("{0} nastavil denni dobu na poledne.", args.Player.Name);
 					break;
 				case "midnight":
 					TSPlayer.Server.SetTime(false, 16200.0);
-					TSPlayer.All.SendInfoMessage("{0} set the time to midnight.", args.Player.Name);
+                    TSPlayer.All.SendInfoMessage("{0} nastavil denni dobu na pulno.", args.Player.Name);
 					break;
 				default:
 					args.Player.SendErrorMessage("Invalid syntax! Proper syntax: /time <day/night/dusk/noon/midnight>");
