@@ -941,7 +941,7 @@ namespace TShockAPI
 			{
 				if (!tsplr.SilentKickInProgress && tsplr.State >= 3)
 				{
-					Utils.Broadcast(tsplr.Name + " odesel", Color.Yellow);
+					Utils.Broadcast("Hrac " + tsplr.Name + " odesel.", Color.Yellow);
 				}
 				Log.Info(string.Format("{0} se odpoji.", tsplr.Name));
 
