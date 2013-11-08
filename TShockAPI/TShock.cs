@@ -70,6 +70,7 @@ namespace TShockAPI
 		public static SecureRest RestApi;
 		public static RestManager RestManager;
 		public static Utils Utils = Utils.Instance;
+		public static StatTracker StatTracker = new StatTracker();
 		/// <summary>
 		/// Used for implementing REST Tokens prior to the REST system starting up.
 		/// </summary>
@@ -598,14 +599,33 @@ namespace TShockAPI
 				AuthToken = 0;
 			}
 
-            Regions.ReloadAllRegions();
+			Regions.ReloadAllRegions();
 
 			Lighting.lightMode = 2;
-			FixChestStacks();
 
-            
+			ComputeMaxStyles();
+			FixChestStacks();
+			StatTracker.Initialize();
 		}
 
+		private void ComputeMaxStyles()
+		{
+			var item = new Item();
+			for (int i = 0; i < Main.maxItemTypes; i++)
+			{
+				item.netDefaults(i);
+				if (item.placeStyle > 0)
+				{
+					if (GetDataHandlers.MaxPlaceStyles.ContainsKey(item.createTile))
+					{
+						if (item.placeStyle > GetDataHandlers.MaxPlaceStyles[item.createTile])
+							GetDataHandlers.MaxPlaceStyles[item.createTile] = item.placeStyle;
+					}
+					else
+						GetDataHandlers.MaxPlaceStyles.Add(item.createTile, item.placeStyle);
+				}
+			}
+		}
 		private void FixChestStacks()
 		{
             if (Config.IgnoreChestStacksOnLoad)

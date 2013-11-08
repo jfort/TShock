@@ -1808,7 +1808,14 @@ namespace TShockAPI
 			KillTileNoItem,
 			PlaceWire,
 			KillWire,
-			PoundTile
+			PoundTile,
+			PlaceActuator,
+			KillActuator,
+			PlaceWire2,
+			KillWire2,
+			PlaceWire3,
+			KillWire3,
+			SlopeTile
 		}
 		public enum EditType
 		{
@@ -1821,6 +1828,14 @@ namespace TShockAPI
 		/// Tiles that can be broken without any tools.
 		/// </summary>
 		private static byte[] breakableTiles = new byte[] { 4, 13, 33, 49, 50, 127, 128, 162 };
+		/// <summary>
+		/// The maximum place styles for each tile.
+		/// </summary>
+		public static Dictionary<int, int> MaxPlaceStyles = new Dictionary<int, int>();
+		/// <summary>
+		/// These projectiles create tiles on death.
+		/// </summary>
+		private static Dictionary<int, int> projectileCreatesTile = new Dictionary<int, int> {{42, 53}, {65, 112}, {68, 116}};
 
 		private static bool HandleTile(GetDataHandlerArgs args)
 		{
@@ -1918,6 +1933,7 @@ namespace TShockAPI
 				}
 
 				Item selectedItem = args.Player.SelectedItem;
+				int lastKilledProj = args.Player.LastKilledProjectile;
 				if (action == EditAction.KillTile && !Main.tileCut[Main.tile[tileX, tileY].type] && !breakableTiles.Contains(Main.tile[tileX, tileY].type))
 				{
 					// If the tile is an axe tile and they aren't selecting an axe, they're hacking.
@@ -1948,17 +1964,19 @@ namespace TShockAPI
 						return true;
 					}
 				}
+				else if (action == EditAction.PlaceTile && (projectileCreatesTile.ContainsKey(lastKilledProj) && editData == projectileCreatesTile[lastKilledProj]))
+				{
+					args.Player.LastKilledProjectile = 0;
+				}
 				else if (action == EditAction.PlaceTile || action == EditAction.PlaceWall)
 				{
-					if (action == EditAction.PlaceTile && TShock.Config.PreventInvalidPlaceStyle && ((editData == 4 && style > 11) ||
-						(editData == 13 && style > 4) || (editData == 15 && style > 23) || (editData == 21 && style > 22) ||
-						(editData == 82 && style > 5) || (editData == 91 && style > 108) || (editData == 105 && style > 49) ||
-						(editData == 135 && style > 6) || (editData == 139 && style > 27) || (editData == 144 && style > 2) ||
-						(editData == 149 && style > 2) || (editData == 137 && style > 4) || (editData == 79 && style > 12)))
+					if (action == EditAction.PlaceTile && TShock.Config.PreventInvalidPlaceStyle &&
+						MaxPlaceStyles.ContainsKey(editData) && style > MaxPlaceStyles[editData])
 					{
 						args.Player.SendTileSquare(tileX, tileY, 4);
 						return true;
 					}
+
 					// If they aren't selecting the item which creates the tile or wall, they're hacking.
 					if ((editData != 127 && editData != 213) && editData != (action == EditAction.PlaceTile ? selectedItem.createTile : selectedItem.createWall))
 					{
@@ -1992,23 +2010,47 @@ namespace TShockAPI
 						}
 					}
 				}
-				else if (action == EditAction.PlaceWire)
+				else if (action == EditAction.PlaceWire || action == EditAction.PlaceWire2 || action == EditAction.PlaceWire3)
 				{
-					// If they aren't selecting the wrench, they're hacking.
-					if (args.TPlayer.inventory[args.TPlayer.selectedItem].type != 509)
+					// If they aren't selecting a wrench, they're hacking.
+					if (selectedItem.type != 509 && selectedItem.type != 850 && selectedItem.type != 851)
 					{
 						args.Player.SendTileSquare(tileX, tileY, 1);
 						return true;
 					}
 				}
-				else if (action == EditAction.KillWire)
+				else if (action == EditAction.KillActuator || action == EditAction.KillWire ||
+					action == EditAction.KillWire2 || action == EditAction.KillWire3)
 				{
 					// If they aren't selecting the wire cutter, they're hacking.
-					if (args.TPlayer.inventory[args.TPlayer.selectedItem].type != 510)
+					if (selectedItem.type != 510)
 					{
 						args.Player.SendTileSquare(tileX, tileY, 1);
 						return true;
 					}
+				}
+				else if (action == EditAction.PlaceActuator)
+				{
+					// If they aren't selecting the actuator, they're hacking.
+					if (selectedItem.type != 849)
+					{
+						args.Player.SendTileSquare(tileX, tileY, 1);
+						return true;
+					}
+				}
+				else if (action == EditAction.PoundTile || action == EditAction.SlopeTile)
+				{
+					// If they aren't selecting a hammer, they're hacking.
+					if (selectedItem.hammer == 0)
+					{
+						args.Player.SendTileSquare(tileX, tileY, 1);
+						return true;
+					}
+				}
+
+				if (TShock.Config.AllowCutTilesAndBreakables && (Main.tileCut[Main.tile[tileX, tileY].type] || breakableTiles.Contains(Main.tile[tileX, tileY].type)))
+				{
+					return false;
 				}
 
 				if (TShock.CheckIgnores(args.Player))
@@ -2560,6 +2602,8 @@ namespace TShockAPI
 				return true;
 			}
 
+			args.Player.LastKilledProjectile = type;
+
 			return false;
 		}
 
@@ -2852,6 +2896,12 @@ namespace TShockAPI
 			var y = args.Data.ReadInt32();
 
 			args.Player.ActiveChest = id;
+
+			if (TShock.CheckTilePermission(args.Player, x, y) && TShock.Config.RegionProtectChests)
+			{
+				args.Player.SendData(PacketTypes.ChestOpen, "", -1);
+				return true;
+			}
 
 			return false;
 		}
