@@ -2128,8 +2128,9 @@ namespace TShockAPI
 				int pageNumber;
 				if (!PaginationTools.TryParsePageNumber(args.Parameters, 1, args.Player, out pageNumber))
 					return;
-				IEnumerable<string> warpNames = from warp in TShock.Warps.ListAllPublicWarps(Main.worldID.ToString())
-												select warp.WarpName;
+				IEnumerable<string> warpNames = from warp in TShock.Warps.Warps
+												where !warp.IsPrivate
+												select warp.Name;
 				PaginationTools.SendPage(args.Player, pageNumber, PaginationTools.BuildLinesFromTerms(warpNames),
 					new PaginationTools.Settings
 					{
@@ -2149,9 +2150,14 @@ namespace TShockAPI
                     {
                         args.Player.SendErrorMessage("Name reserved, use a different name.");
                     }
-                    else if (TShock.Warps.AddWarp(args.Player.TileX, args.Player.TileY, warpName, Main.worldID.ToString()))
+                    else if (TShock.Warps.Add(args.Player.TileX, args.Player.TileY, warpName))
                     {
                         args.Player.SendSuccessMessage("Warp added: " + warpName);
+						foreach (TSPlayer tsplr in TShock.Players)
+						{
+							if (tsplr != null && tsplr.IsRaptor && tsplr.Group.HasPermission(Permissions.managewarp))
+								tsplr.SendRaptorWarp(TShock.Warps.Find(warpName));
+						}
                     }
                     else
                     {
@@ -2168,10 +2174,17 @@ namespace TShockAPI
                 if (args.Parameters.Count == 2)
                 {
                     string warpName = args.Parameters[1];
-                    if (TShock.Warps.RemoveWarp(warpName))
-                        args.Player.SendSuccessMessage("Warp deleted: " + warpName);
-                    else
-                        args.Player.SendErrorMessage("Could not find the specified warp.");
+					if (TShock.Warps.Remove(warpName))
+					{
+						args.Player.SendSuccessMessage("Warp deleted: " + warpName);
+						foreach (TSPlayer tsplr in TShock.Players)
+						{
+							if (tsplr != null && tsplr.IsRaptor && tsplr.Group.HasPermission(Permissions.managewarp))
+								tsplr.SendRaptorWarpDeletion(warpName);
+						}
+					}
+					else
+						args.Player.SendErrorMessage("Could not find the specified warp.");
                 }
                 else
                     args.Player.SendErrorMessage("Invalid syntax! Proper syntax: /warp del [name]");
@@ -2186,7 +2199,7 @@ namespace TShockAPI
                     bool state = false;
                     if (Boolean.TryParse(args.Parameters[2], out state))
                     {
-                        if (TShock.Warps.HideWarp(args.Parameters[1], state))
+                        if (TShock.Warps.Hide(args.Parameters[1], state))
                         {
                             if (state)
                                 args.Player.SendSuccessMessage("Warp " + warpName + " is now private.");
@@ -2223,30 +2236,31 @@ namespace TShockAPI
 					TShock.Utils.SendMultipleMatchError(args.Player, foundplr.Select(p => p.Name));
                     return;
                 }
+
                 string warpName = args.Parameters[2];
-                var warp = TShock.Warps.FindWarp(warpName);
+                var warp = TShock.Warps.Find(warpName);
                 var plr = foundplr[0];
-                if (warp.WarpPos != Vector2.Zero)
-                {
-                    if (plr.Teleport((int)warp.WarpPos.X*16, (int)warp.WarpPos.Y*16 ))
-                    {
-                        plr.SendSuccessMessage(string.Format("{0} warped you to {1}.", args.Player.Name, warpName));
-                        args.Player.SendSuccessMessage(string.Format("You warped {0} to {1}.", plr.Name, warpName));
-                    }
-                }
-                else
-                {
-                    args.Player.SendErrorMessage("Specified warp not found.");
-                }
+				if (warp.Position != Point.Zero)
+				{
+					if (plr.Teleport(warp.Position.X * 16, warp.Position.Y * 16))
+					{
+						plr.SendSuccessMessage(String.Format("{0} warped you to {1}.", args.Player.Name, warpName));
+						args.Player.SendSuccessMessage(String.Format("You warped {0} to {1}.", plr.Name, warpName));
+					}
+				}
+				else
+				{
+					args.Player.SendErrorMessage("Specified warp not found.");
+				}
                 #endregion
             }
             else
             {
                 string warpName = String.Join(" ", args.Parameters);
-                var warp = TShock.Warps.FindWarp(warpName);
-                if (warp.WarpPos != Vector2.Zero)
+                var warp = TShock.Warps.Find(warpName);
+                if (warp != null)
                 {
-                    if (args.Player.Teleport((int)warp.WarpPos.X*16, (int)warp.WarpPos.Y*16 ))
+					if (args.Player.Teleport(warp.Position.X * 16, warp.Position.Y * 16))
                         args.Player.SendSuccessMessage("Warped to " + warpName + ".");
                 }
                 else
@@ -3112,7 +3126,17 @@ namespace TShockAPI
 								{
 									args.Player.TempPoints[0] = Point.Zero;
 									args.Player.TempPoints[1] = Point.Zero;
+<<<<<<< HEAD
 									args.Player.SendMessage("Vytvoren region " + regionName, Color.Yellow);
+=======
+									args.Player.SendMessage("Set region " + regionName, Color.Yellow);
+
+									foreach (TSPlayer tsplr in TShock.Players)
+									{
+										if (tsplr != null && tsplr.IsRaptor && tsplr.Group.HasPermission(Permissions.manageregion))
+											tsplr.SendRaptorRegion(TShock.Regions.GetRegionByName(regionName));
+									}
+>>>>>>> refs/remotes/NyxStudios/general-devel
 								}
 								else
 								{
@@ -3160,19 +3184,34 @@ namespace TShockAPI
 						{
 							string regionName = String.Join(" ", args.Parameters.GetRange(1, args.Parameters.Count - 1));
 							if (TShock.Regions.DeleteRegion(regionName))
+<<<<<<< HEAD
 								args.Player.SendMessage("Smazan region " + regionName, Color.Yellow);
+=======
+							{
+								args.Player.SendInfoMessage("Deleted region \"{0}\".", regionName);
+								foreach (TSPlayer tsplr in TShock.Players)
+								{
+									if (tsplr != null && tsplr.IsRaptor && tsplr.Group.HasPermission(Permissions.manageregion))
+										tsplr.SendRaptorRegionDeletion(regionName);
+								}
+							}
+>>>>>>> refs/remotes/NyxStudios/general-devel
 							else
+<<<<<<< HEAD
 								args.Player.SendMessage("Nemohu najit zadany region", Color.Red);
+=======
+								args.Player.SendErrorMessage("Could not find the specified region!");
+>>>>>>> refs/remotes/NyxStudios/general-devel
 						}
 						else
-							args.Player.SendMessage("Invalid syntax! Proper syntax: /region delete <name>", Color.Red);
+							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: /region delete <name>");
 						break;
 					}
 				case "clear":
 					{
 						args.Player.TempPoints[0] = Point.Zero;
 						args.Player.TempPoints[1] = Point.Zero;
-						args.Player.SendMessage("Cleared temp area", Color.Yellow);
+						args.Player.SendInfoMessage("Cleared temporary points.");
 						args.Player.AwaitingTempPoint = 0;
 						break;
 					}
@@ -3511,19 +3550,18 @@ namespace TShockAPI
 							if (TShock.Regions.resizeRegion(args.Parameters[1], addAmount, direction))
 							{
 								args.Player.SendMessage("Region Resized Successfully!", Color.Yellow);
-								TShock.Regions.ReloadAllRegions();
+								foreach (TSPlayer tsplr in TShock.Players)
+								{
+									if (tsplr != null && tsplr.IsRaptor && tsplr.Group.HasPermission(Permissions.manageregion))
+										tsplr.SendRaptorRegion(TShock.Regions.GetRegionByName(args.Parameters[1]));
+								}
+								TShock.Regions.Reload();
 							}
 							else
-							{
-								args.Player.SendMessage("Invalid syntax! Proper syntax: /region resize <region> <u/d/l/r> <amount>",
-														Color.Red);
-							}
+								args.Player.SendErrorMessage("Invalid syntax! Proper syntax: /region resize <region> <u/d/l/r> <amount>");
 						}
 						else
-						{
-							args.Player.SendMessage("Invalid syntax! Proper syntax: /region resize <region> <u/d/l/r> <amount>",
-													Color.Red);
-						}
+							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: /region resize <region> <u/d/l/r> <amount>");
 						break;
 					}
 				case "tp":
@@ -3548,7 +3586,6 @@ namespace TShockAPI
 						}
 
 						args.Player.Teleport(region.Area.Center.X * 16, region.Area.Center.Y * 16);
-
 						break;
 					}
 				case "help":
@@ -4273,7 +4310,7 @@ namespace TShockAPI
 				}
 			}
 
-			if (args.Player.InventorySlotAvailable || (item.name.Contains("Coin") && item.type != 905) || item.type == 58 || item.type == 184)
+			if (args.Player.InventorySlotAvailable || (item.type > 70 && item.type < 75) || item.ammo > 0 || item.type == 58 || item.type == 184)
 			{
 				if (itemAmount == 0 || itemAmount > item.maxStack)
 					itemAmount = item.maxStack;
@@ -4285,7 +4322,7 @@ namespace TShockAPI
 				}
 				else
 				{
-					args.Player.SendErrorMessage("The item is banned and the config prevents you from spawning banned items.");
+					args.Player.SendErrorMessage("You cannot spawn banned items.");
 				}
 			}
 			else
@@ -4353,7 +4390,7 @@ namespace TShockAPI
 					else
 					{
 						var plr = players[0];
-						if (plr.InventorySlotAvailable || (item.name.Contains("Coin") && item.type != 905)  || item.type == 58 || item.type == 184)
+						if (plr.InventorySlotAvailable || (item.type > 70 && item.type < 75) || item.ammo > 0 || item.type == 58 || item.type == 184)
 						{
 							if (itemAmount == 0 || itemAmount > item.maxStack)
 								itemAmount = item.maxStack;
@@ -4364,7 +4401,7 @@ namespace TShockAPI
 							}
 							else
 							{
-								args.Player.SendErrorMessage("The item is banned and the config prevents spawning banned items.");
+								args.Player.SendErrorMessage("You cannot spawn banned items.");
 							}
 							
 						}

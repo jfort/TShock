@@ -36,6 +36,8 @@ using Terraria;
 using TerrariaApi.Server;
 using TShockAPI.DB;
 using TShockAPI.Net;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace TShockAPI
 {
@@ -353,6 +355,24 @@ namespace TShockAPI
 
 	    private void OnPlayerLogin(Hooks.PlayerPostLoginEventArgs args)
 	    {
+			if (args.Player.IsRaptor)
+			{
+				Task.Factory.StartNew(() =>
+					{
+						args.Player.SendRaptorPermissions();
+						if (args.Player.Group.HasPermission(Permissions.manageregion))
+						{
+							for (int i = 0; i < Regions.Regions.Count; i++)
+								args.Player.SendRaptorRegion(Regions.Regions[i]);
+						}
+						if (args.Player.Group.HasPermission(Permissions.managewarp))
+						{
+							for (int i = 0; i < Warps.Warps.Count; i++)
+								args.Player.SendRaptorWarp(Warps.Warps[i]);
+						}
+					});
+			}
+
 	        User u = Users.GetUserByName(args.Player.UserAccountName);
             List<String> KnownIps = new List<string>();
 	        if (!string.IsNullOrWhiteSpace(u.KnownIps))
@@ -598,13 +618,14 @@ namespace TShockAPI
 			{
 				AuthToken = 0;
 			}
-
-			Regions.ReloadAllRegions();
+			
+			Regions.Reload();
+			Warps.ReloadWarps();
 
 			Lighting.lightMode = 2;
-
 			ComputeMaxStyles();
 			FixChestStacks();
+			
 			StatTracker.Initialize();
 		}
 
@@ -825,35 +846,41 @@ namespace TShockAPI
 		                                  Config.MaxSlots, Netplay.serverListenIP, Netplay.serverPort, Version);
 		}
 
-        private void OnHardUpdate(HardmodeTileUpdateEventArgs args)
-        {
-            if (args.Handled)
-                return;
+		private void OnHardUpdate(HardmodeTileUpdateEventArgs args)
+		{
+			if (args.Handled)
+				return;
 
-            if (!Config.AllowCorruptionCreep && ( args.Type == 23 || args.Type == 25 || args.Type == 0 ||
-                args.Type == 112 || args.Type == 23 || args.Type == 32 ) )
-            {
-                args.Handled = true;
-                return;
-            }
+			if (!Config.AllowCrimsonCreep && (args.Type == 0 || args.Type == 199 || args.Type == 203 || args.Type == 234))
+			{
+				args.Handled = true;
+				return;
+			}
 
-            if (!Config.AllowHallowCreep && (args.Type == 109 || args.Type == 117 || args.Type == 116 ) )
-            {
-                args.Handled = true;
-            }
-        }
+			if (!Config.AllowCorruptionCreep && (args.Type == 23 || args.Type == 25 || args.Type == 0 ||
+				args.Type == 112 || args.Type == 32))
+			{
+				args.Handled = true;
+				return;
+			}
 
-        private void OnStatueSpawn( StatueSpawnEventArgs args )
-        {
-            if( args.Within200 < Config.StatueSpawn200 && args.Within600 < Config.StatueSpawn600 && args.WorldWide < Config.StatueSpawnWorld )
-            {
-                args.Handled = true;
-            }
-            else
-            {
-                args.Handled = false;
-            }
-        }
+			if (!Config.AllowHallowCreep && (args.Type == 109 || args.Type == 117 || args.Type == 116))
+			{
+				args.Handled = true;
+			}
+		}
+
+		private void OnStatueSpawn(StatueSpawnEventArgs args)
+		{
+			if (args.Within200 < Config.StatueSpawn200 && args.Within600 < Config.StatueSpawn600 && args.WorldWide < Config.StatueSpawnWorld)
+			{
+				args.Handled = true;
+			}
+			else
+			{
+				args.Handled = false;
+			}
+		}
 
 		private void OnConnect(ConnectEventArgs args)
 		{
@@ -1116,13 +1143,7 @@ namespace TShockAPI
 			Debug.WriteLine("Recv: {0:X}: {2} ({1:XX})", e.Msg.whoAmI, (byte) type, type);
 
 			var player = Players[e.Msg.whoAmI];
-			if (player == null)
-			{
-				e.Handled = true;
-				return;
-			}
-
-			if (!player.ConnectionAlive)
+			if (player == null || !player.ConnectionAlive)
 			{
 				e.Handled = true;
 				return;
@@ -1143,15 +1164,8 @@ namespace TShockAPI
 
 			using (var data = new MemoryStream(e.Msg.readBuffer, e.Index, e.Length))
 			{
-				try
-				{
-					if (GetDataHandlers.HandlerGetData(type, player, data))
-						e.Handled = true;
-				}
-				catch (Exception ex)
-				{
-					Log.Error(ex.ToString());
-				}
+				// Exceptions are already handled
+				e.Handled = GetDataHandlers.HandlerGetData(type, player, data);
 			}
 		}
 
@@ -1283,7 +1297,7 @@ namespace TShockAPI
 																	sock.kill = true;
 																	using (var ms = new MemoryStream())
 																	{
-																		new DisconnectMsg {Reason = str}.PackFull(ms);
+																		new DisconnectMsg { Reason = str }.PackFull(ms);
 																		SendBytesBufferless(sock, ms.ToArray());
 																	}
 																};
@@ -1303,82 +1317,92 @@ namespace TShockAPI
 					}
 				}
 				e.Handled = true;
+				return;
 			}
-            if (e.MsgId == PacketTypes.WorldInfo)
-            {
-                if (e.remoteClient == -1) return;
-                var player = Players[e.remoteClient];
-                if (player == null) return;
-                if (Config.UseServerName)
-                {
-                    using (var ms = new MemoryStream())
-                    {
-                        var msg = new WorldInfoMsg
-                        {
-								Time = (int) Main.time,
-								DayTime = Main.dayTime,
-								MoonPhase = (byte) Main.moonPhase,
-								BloodMoon = Main.bloodMoon,
-								MaxTilesX = Main.maxTilesX,
-								MaxTilesY = Main.maxTilesY,
-								SpawnX = Main.spawnTileX,
-								SpawnY = Main.spawnTileY,
-								WorldSurface = (int) Main.worldSurface,
-								RockLayer = (int) Main.rockLayer,
-								//Sending a fake world id causes the client to not be able to find a stored spawnx/y.
-								//This fixes the bed spawn point bug. With a fake world id it wont be able to find the bed spawn.
-								WorldID = Main.worldID,
-								MoonType = (byte)Main.moonType,
-								TreeX0 = Main.treeX[0],
-								TreeX1 = Main.treeX[1],
-								TreeX2 = Main.treeX[2],
-								TreeStyle0 = (byte)Main.treeStyle[0],
-								TreeStyle1 = (byte)Main.treeStyle[1],
-								TreeStyle2 = (byte)Main.treeStyle[2],
-								TreeStyle3 = (byte)Main.treeStyle[3],
-								CaveBackX0 = Main.caveBackX[0],
-								CaveBackX1 = Main.caveBackX[1],
-								CaveBackX2 = Main.caveBackX[2],
-								CaveBackStyle0 = (byte)Main.caveBackStyle[0],
-								CaveBackStyle1 = (byte)Main.caveBackStyle[1],
-								CaveBackStyle2 = (byte)Main.caveBackStyle[2],
-								CaveBackStyle3 = (byte)Main.caveBackStyle[3],
-								SetBG0 = (byte)WorldGen.treeBG,
-								SetBG1 = (byte)WorldGen.corruptBG,
-								SetBG2 = (byte)WorldGen.jungleBG,
-								SetBG3 = (byte)WorldGen.snowBG,
-								SetBG4 = (byte)WorldGen.hallowBG,
-								SetBG5 = (byte)WorldGen.crimsonBG,
-								SetBG6 = (byte)WorldGen.desertBG,
-								SetBG7 = (byte)WorldGen.oceanBG,
-								IceBackStyle = (byte)Main.iceBackStyle,
-								JungleBackStyle = (byte)Main.jungleBackStyle,
-								HellBackStyle = (byte)Main.hellBackStyle,
-								WindSpeed = Main.windSpeed,
-								NumberOfClouds = (byte)Main.numClouds,
-								BossFlags = (WorldGen.shadowOrbSmashed ? BossFlags.OrbSmashed : BossFlags.None) |
-											(NPC.downedBoss1 ? BossFlags.DownedBoss1 : BossFlags.None) |
-											(NPC.downedBoss2 ? BossFlags.DownedBoss2 : BossFlags.None) |
-											(NPC.downedBoss3 ? BossFlags.DownedBoss3 : BossFlags.None) |
-											(Main.hardMode ? BossFlags.HardMode : BossFlags.None) |
-											(NPC.downedClown ? BossFlags.DownedClown : BossFlags.None) |
-											(Main.ServerSideCharacter ? BossFlags.ServerSideCharacter : BossFlags.None),
-								BossFlags2 = (NPC.downedMechBoss1 ? BossFlags2.DownedMechBoss1 : BossFlags2.None) |
-											 (NPC.downedMechBoss2 ? BossFlags2.DownedMechBoss2 : BossFlags2.None) |
-											 (NPC.downedMechBoss3 ? BossFlags2.DownedMechBoss3 : BossFlags2.None) |
-											 (NPC.downedMechBossAny ? BossFlags2.DownedMechBossAny : BossFlags2.None) |
-											 (Main.cloudBGActive == 1f ? BossFlags2.CloudBg : BossFlags2.None) |
-												(WorldGen.crimson ? BossFlags2.Crimson : BossFlags2.None) |
-												(Main.pumpkinMoon ? BossFlags2.Pumpkin : BossFlags2.None),
-								Rain = Main.maxRaining,
-								WorldName = TShock.Config.UseServerName ? TShock.Config.ServerName : Main.worldName
-							};
-                        msg.PackFull(ms);
-                        player.SendRawData(ms.ToArray());
-                    }
-                    e.Handled = true;
-                }
-            }
+			else if (e.MsgId == PacketTypes.WorldInfo)
+			{
+				if (e.remoteClient == -1) return;
+				var player = Players[e.remoteClient];
+				if (player == null) return;
+				if (Config.UseServerName)
+				{
+					using (var ms = new MemoryStream())
+					{
+						var msg = new WorldInfoMsg
+						{
+							Time = (int)Main.time,
+							DayTime = Main.dayTime,
+							MoonPhase = (byte)Main.moonPhase,
+							BloodMoon = Main.bloodMoon,
+							MaxTilesX = Main.maxTilesX,
+							MaxTilesY = Main.maxTilesY,
+							SpawnX = Main.spawnTileX,
+							SpawnY = Main.spawnTileY,
+							WorldSurface = (int)Main.worldSurface,
+							RockLayer = (int)Main.rockLayer,
+							//Sending a fake world id causes the client to not be able to find a stored spawnx/y.
+							//This fixes the bed spawn point bug. With a fake world id it wont be able to find the bed spawn.
+							WorldID = Main.worldID,
+							MoonType = (byte)Main.moonType,
+							TreeX0 = Main.treeX[0],
+							TreeX1 = Main.treeX[1],
+							TreeX2 = Main.treeX[2],
+							TreeStyle0 = (byte)Main.treeStyle[0],
+							TreeStyle1 = (byte)Main.treeStyle[1],
+							TreeStyle2 = (byte)Main.treeStyle[2],
+							TreeStyle3 = (byte)Main.treeStyle[3],
+							CaveBackX0 = Main.caveBackX[0],
+							CaveBackX1 = Main.caveBackX[1],
+							CaveBackX2 = Main.caveBackX[2],
+							CaveBackStyle0 = (byte)Main.caveBackStyle[0],
+							CaveBackStyle1 = (byte)Main.caveBackStyle[1],
+							CaveBackStyle2 = (byte)Main.caveBackStyle[2],
+							CaveBackStyle3 = (byte)Main.caveBackStyle[3],
+							SetBG0 = (byte)WorldGen.treeBG,
+							SetBG1 = (byte)WorldGen.corruptBG,
+							SetBG2 = (byte)WorldGen.jungleBG,
+							SetBG3 = (byte)WorldGen.snowBG,
+							SetBG4 = (byte)WorldGen.hallowBG,
+							SetBG5 = (byte)WorldGen.crimsonBG,
+							SetBG6 = (byte)WorldGen.desertBG,
+							SetBG7 = (byte)WorldGen.oceanBG,
+							IceBackStyle = (byte)Main.iceBackStyle,
+							JungleBackStyle = (byte)Main.jungleBackStyle,
+							HellBackStyle = (byte)Main.hellBackStyle,
+							WindSpeed = Main.windSpeed,
+							NumberOfClouds = (byte)Main.numClouds,
+							BossFlags = (WorldGen.shadowOrbSmashed ? BossFlags.OrbSmashed : BossFlags.None) |
+										(NPC.downedBoss1 ? BossFlags.DownedBoss1 : BossFlags.None) |
+										(NPC.downedBoss2 ? BossFlags.DownedBoss2 : BossFlags.None) |
+										(NPC.downedBoss3 ? BossFlags.DownedBoss3 : BossFlags.None) |
+										(Main.hardMode ? BossFlags.HardMode : BossFlags.None) |
+										(NPC.downedClown ? BossFlags.DownedClown : BossFlags.None) |
+										(Main.ServerSideCharacter ? BossFlags.ServerSideCharacter : BossFlags.None),
+							BossFlags2 = (NPC.downedMechBoss1 ? BossFlags2.DownedMechBoss1 : BossFlags2.None) |
+										 (NPC.downedMechBoss2 ? BossFlags2.DownedMechBoss2 : BossFlags2.None) |
+										 (NPC.downedMechBoss3 ? BossFlags2.DownedMechBoss3 : BossFlags2.None) |
+										 (NPC.downedMechBossAny ? BossFlags2.DownedMechBossAny : BossFlags2.None) |
+										 (Main.cloudBGActive == 1f ? BossFlags2.CloudBg : BossFlags2.None) |
+											(WorldGen.crimson ? BossFlags2.Crimson : BossFlags2.None) |
+											(Main.pumpkinMoon ? BossFlags2.Pumpkin : BossFlags2.None),
+							Rain = Main.maxRaining,
+							WorldName = TShock.Config.UseServerName ? TShock.Config.ServerName : Main.worldName
+						};
+						msg.PackFull(ms);
+						player.SendRawData(ms.ToArray());
+					}
+					e.Handled = true;
+					return;
+				}
+			}
+			else if (e.MsgId == PacketTypes.PlayerHp)
+			{
+				if (Main.player[(byte)e.number].statLife <= 0)
+				{
+					e.Handled = true;
+					return;
+				}
+			}
 		}
 
 		private void OnStartHardMode(HandledEventArgs e)
