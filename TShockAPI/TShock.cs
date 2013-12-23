@@ -893,26 +893,6 @@ namespace TShockAPI
 				return;
 			}
 
-<<<<<<< HEAD
-			var ipban = Bans.GetBanByIp(player.IP);
-			Ban ban = null;
-			if (ipban != null && Config.EnableIPBans)
-				ban = ipban;
-
-			if (ban != null)
-			{
-				if (!Utils.HasBanExpired(ban))
-			    {
-			        DateTime exp;
-			        string duration = DateTime.TryParse(ban.Expiration, out exp) ? String.Format("until {0}", exp.ToString("G")) : "forever";
-			        Utils.ForceKick(player, string.Format("Jsi zabanovan na {0}: {1}", duration, ban.Reason), true, false);
-					args.Handled = true;
-			        return;
-			    }
-			}
-
-=======
->>>>>>> refs/remotes/NyxStudios/general-devel
 			if (!FileTools.OnWhitelist(player.IP))
 			{
 				Utils.ForceKick(player, Config.WhitelistKickReason, true, false);
@@ -948,13 +928,11 @@ namespace TShockAPI
 			
 			if (Config.KickEmptyUUID && String.IsNullOrWhiteSpace(player.UUID))
 			{
-<<<<<<< HEAD
-				Utils.ForceKick(player, "Tvuj klient neodesila identifikaci UUID. Tento server UUID vyzaduje.");
-=======
-				Utils.ForceKick(player, "Your client did not send a UUID, this server is not configured to accept such a client.", true);
+
+				Utils.ForceKick(player, "Tvuj klient neodesila identifikaci UUID. Tento server UUID vyzaduje.", true);
 				args.Handled = true;
 				return;
->>>>>>> refs/remotes/NyxStudios/general-devel
+
 			}
 
 			Ban ban = null;
@@ -980,13 +958,10 @@ namespace TShockAPI
 			    if (!Utils.HasBanExpired(ban))
 			    {
 			        DateTime exp;
-<<<<<<< HEAD
-			        string duration = DateTime.TryParse(ban.Expiration, out exp) ? String.Format("until {0}", exp.ToString("G")) : "forever";
-                    Utils.ForceKick(player, string.Format("Jsi zabanovan na {0}: {1}", duration, ban.Reason), true, false);
-=======
+
 					if (!DateTime.TryParse(ban.Expiration, out exp))
 					{
-						player.Disconnect("You are banned forever: " + ban.Reason);
+						player.Disconnect("Jsi permanentne zabanovan: " + ban.Reason);
 					}
 					else
 					{
@@ -994,17 +969,17 @@ namespace TShockAPI
 						int months = ts.Days / 30;
 						if (months > 0)
 						{
-							player.Disconnect(String.Format("You are banned for {0} month{1} and {2} day{3}: {4}",
+							player.Disconnect(String.Format("Jsi zabanovan na {0} mesicu{1} a {2} dnu{3}: {4}",
 								months, months == 1 ? "" : "s", ts.Days, ts.Days == 1 ? "" : "s", ban.Reason));
 						}
 						else if (ts.Days > 0)
 						{
-							player.Disconnect(String.Format("You are banned for {0} day{1} and {2} hour{3}: {4}",
+							player.Disconnect(String.Format("Jsi zabanovan na {0} dny{1} a {2} hodin{3}: {4}",
 								ts.Days, ts.Days == 1 ? "": "s", ts.Hours, ts.Hours == 1 ? "" : "s", ban.Reason));
 						}
 						else if (ts.Hours > 0)
 						{
-							player.Disconnect(String.Format("You are banned for {0} hour{1} and {2} minute{3}: {4}",
+							player.Disconnect(String.Format("Jsi zabanovan na {0} hodin{1} a {2} minut{3}: {4}",
 								ts.Hours, ts.Hours == 1 ? "" : "s", ts.Minutes, ts.Minutes == 1 ? "" : "s", ban.Reason));
 						}
 						else
@@ -1014,7 +989,6 @@ namespace TShockAPI
 						}
 
 					}
->>>>>>> refs/remotes/NyxStudios/general-devel
 					args.Handled = true;
 			    }
 			}            
@@ -1028,15 +1002,9 @@ namespace TShockAPI
 			if (tsplr != null && tsplr.ReceivedInfo)
 			{
 				if (!tsplr.SilentKickInProgress && tsplr.State >= 3)
-<<<<<<< HEAD
-				{
+
 					Utils.Broadcast("Hrac " + tsplr.Name + " odesel.", Color.Yellow);
-				}
-				Log.Info(string.Format("{0} se odpoji.", tsplr.Name));
-=======
-					Utils.Broadcast(tsplr.Name + " has left.", Color.Yellow);
-				Log.Info(string.Format("{0} disconnected.", tsplr.Name));
->>>>>>> refs/remotes/NyxStudios/general-devel
+				Log.Info(string.Format("{0} se odpojil.", tsplr.Name));
 
 				if (tsplr.IsLoggedIn && !tsplr.IgnoreActionsForClearingTrashCan && TShock.Config.ServerSideCharacter && (!tsplr.Dead || tsplr.TPlayer.difficulty != 2))
 				{

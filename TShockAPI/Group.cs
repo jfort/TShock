@@ -118,7 +118,7 @@ namespace TShockAPI
         /// <summary>
         /// The permissions of this group and all that it inherits from.
         /// </summary>
-		public List<string> TotalPermissions
+		public virtual List<string> TotalPermissions
 		{
 			get
 			{

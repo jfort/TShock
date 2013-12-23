@@ -3144,17 +3144,14 @@ namespace TShockAPI
 								{
 									args.Player.TempPoints[0] = Point.Zero;
 									args.Player.TempPoints[1] = Point.Zero;
-<<<<<<< HEAD
+
 									args.Player.SendMessage("Vytvoren region " + regionName, Color.Yellow);
-=======
-									args.Player.SendMessage("Set region " + regionName, Color.Yellow);
 
 									foreach (TSPlayer tsplr in TShock.Players)
 									{
 										if (tsplr != null && tsplr.IsRaptor && tsplr.Group.HasPermission(Permissions.manageregion))
 											tsplr.SendRaptorRegion(TShock.Regions.GetRegionByName(regionName));
 									}
->>>>>>> refs/remotes/NyxStudios/general-devel
 								}
 								else
 								{
@@ -3202,24 +3199,18 @@ namespace TShockAPI
 						{
 							string regionName = String.Join(" ", args.Parameters.GetRange(1, args.Parameters.Count - 1));
 							if (TShock.Regions.DeleteRegion(regionName))
-<<<<<<< HEAD
-								args.Player.SendMessage("Smazan region " + regionName, Color.Yellow);
-=======
+
 							{
-								args.Player.SendInfoMessage("Deleted region \"{0}\".", regionName);
+								args.Player.SendInfoMessage("Smazan region \"{0}\".", regionName);
 								foreach (TSPlayer tsplr in TShock.Players)
 								{
 									if (tsplr != null && tsplr.IsRaptor && tsplr.Group.HasPermission(Permissions.manageregion))
 										tsplr.SendRaptorRegionDeletion(regionName);
 								}
 							}
->>>>>>> refs/remotes/NyxStudios/general-devel
 							else
-<<<<<<< HEAD
-								args.Player.SendMessage("Nemohu najit zadany region", Color.Red);
-=======
-								args.Player.SendErrorMessage("Could not find the specified region!");
->>>>>>> refs/remotes/NyxStudios/general-devel
+
+								args.Player.SendErrorMessage("Nemohu najit zadany region!");
 						}
 						else
 							args.Player.SendErrorMessage("Invalid syntax! Proper syntax: /region delete <name>");
