@@ -1588,95 +1588,6 @@ namespace TShockAPI
 			}
 
 			NetMessage.SendData((int) PacketTypes.TimeSet, -1, -1, "", 0, 0, Main.sunModY, Main.moonModY);
-<<<<<<< HEAD
-
-			if (TShock.Config.EnableGeoIP && TShock.Geo != null)
-			{
-				Log.Info(string.Format("{0} ({1}) from '{2}' group from '{3}' joined. ({4}/{5})", args.Player.Name, args.Player.IP,
-									   args.Player.Group.Name, args.Player.Country, TShock.Utils.ActivePlayers(),
-									   TShock.Config.MaxSlots));
-				if (!args.Player.SilentJoinInProgress)
-                    switch (args.Player.Group.Name)
-                       {
-                        case "superadmin":
-                               {
-                                   TShock.Utils.Broadcast(string.Format("Server admin {0} ({1}) se pripojil do hry.", args.Player.Name, args.Player.Country), Color.Red);
-                                   break;
-                               }
-                        case "trustedadmin":
-                            {
-                                TShock.Utils.Broadcast(string.Format("Hlavni admin {0} ({1}) se pripojil do hry.", args.Player.Name, args.Player.Country), Color.Red);
-                                break;
-                            }
-                        case "newadmin":
-                            {
-                                TShock.Utils.Broadcast(string.Format("Kancler {0} ({1}) se pripojil do hry.", args.Player.Name, args.Player.Country), Color.Aqua);
-                                break;
-                            }
-                        case "admin":
-                            {
-                                TShock.Utils.Broadcast(string.Format("Admin {0} ({1}) se pripojil do hry.", args.Player.Name, args.Player.Country), Color.Red);
-                                break;
-                            }
-                        case "registered":
-                            {
-                                TShock.Utils.Broadcast(string.Format("Hrac {0} ({1}) se pripojil do hry.", args.Player.Name, args.Player.Country), Color.Yellow);
-                                break;
-                            }
-                        default:
-                            {
-                                TShock.Utils.Broadcast(string.Format("{0} ({1}) se pripojil do hry.", args.Player.Name, args.Player.Country), Color.Yellow);
-                                break;
-                            }
-                        }
-					
-                
-			}
-			else
-			{
-				Log.Info(string.Format("{0} ({1}) from '{2}' group joined. ({3}/{4})", args.Player.Name, args.Player.IP,
-									   args.Player.Group.Name, TShock.Utils.ActivePlayers(), TShock.Config.MaxSlots));
-				if (!args.Player.SilentJoinInProgress)
-                    switch (args.Player.Group.Name)
-                    {
-                        case "superadmin":
-                            {
-                                TShock.Utils.Broadcast(string.Format("Server admin {0} se pripojil do hry.", args.Player.Name), Color.Red);
-                                break;
-                            }
-                        case "trustedadmin":
-                            {
-                                TShock.Utils.Broadcast(string.Format("Hlavni admin {0} se pripojil do hry.", args.Player.Name), Color.Red);
-                                break;
-                            }
-                        case "newadmin":
-                            {
-                                TShock.Utils.Broadcast(string.Format("Kancler {0} se pripojil do hry.", args.Player.Name), Color.Aqua);
-                                break;
-                            }
-                        case "admin":
-                            {
-                                TShock.Utils.Broadcast(string.Format("Admin {0} se pripojil do hry.", args.Player.Name), Color.Red);
-                                break;
-                            }
-                        case "registered":
-                            {
-                                TShock.Utils.Broadcast(string.Format("Hrac {0} se pripojil do hry.", args.Player.Name), Color.Yellow);
-                                break;
-                            }
-                        default:
-                            {
-                                TShock.Utils.Broadcast(string.Format("{0} se pripojil do hry.", args.Player.Name), Color.Yellow);
-                                break;
-                            }
-                    }
-			}
-
-			if (TShock.Config.DisplayIPToAdmins)
-                TShock.Utils.SendLogs(string.Format("{0} se pripojil do hry. IP: {1}", args.Player.Name, args.Player.IP), Color.Blue);
-
-=======
->>>>>>> refs/remotes/NyxStudios/general-devel
 			return false;
 		}
 
@@ -2962,7 +2873,7 @@ namespace TShockAPI
 
 			if (!args.Player.Group.HasPermission(Permissions.movenpc))
 			{
-				args.Player.SendMessage("Nemas pravo premistnit toto NPC.", Color.Red);
+				args.Player.SendMessage("You do not have permission to relocate NPCs.", Color.Red);
 				args.Player.SendData(PacketTypes.UpdateNPCHome, "", id, Main.npc[id].homeTileX, Main.npc[id].homeTileY,
 									 Convert.ToByte(Main.npc[id].homeless));
 				return true;
@@ -3328,12 +3239,12 @@ namespace TShockAPI
 			}
 			if (spawnboss && !args.Player.Group.HasPermission(Permissions.summonboss))
 			{
-				args.Player.SendMessage("Nemas pravo povolat bosse.", Color.Red);
+				args.Player.SendMessage("You don't have permission to summon a boss.", Color.Red);
 				return true;
 			}
 			if (invasion && !args.Player.Group.HasPermission(Permissions.startinvasion))
 			{
-				args.Player.SendMessage("Nemas pravo vyvolat invazi.", Color.Red);
+				args.Player.SendMessage("You don't have permission to start an invasion.", Color.Red);
 				return true;
 			}
 			if (!spawnboss && !invasion)
@@ -3349,23 +3260,23 @@ namespace TShockAPI
 					boss = "a snow invasion";
 					break;
 				case -4:
-					boss = "invazi dyni.";
+					boss = "a pumpkin invasion";
 					break;
 				case -3:
-					boss = "piraty.";
+					boss = "the pirates";
 					break;
 				case -2:
-					boss = "sneznou legii.";
+					boss = "the Snow Legion";
 					break;
 				case -1:
-					boss = "invazi goblinu.";
+					boss = "a Goblin Invasion";
 					break;
 				default:
 					boss = String.Format("the {0}", npc.name);
 					break;
 			}
 
-			TShock.Utils.SendLogs(string.Format("{0} povolal {1}.", args.Player.Name, boss), Color.PaleVioletRed, args.Player);
+			TShock.Utils.SendLogs(string.Format("{0} summoned {1}.", args.Player.Name, boss), Color.PaleVioletRed, args.Player);
 			return false;
 		}
 
@@ -3482,7 +3393,7 @@ namespace TShockAPI
 
 				if (!isNPC && !args.Player.Group.HasPermission(Permissions.rod))
 				{
-					args.Player.SendErrorMessage("Na teleport nemas potrebna opravneni.");
+					args.Player.SendErrorMessage("You do not have permission to teleport.");
 					args.Player.Teleport(args.TPlayer.position.X, args.TPlayer.position.Y);
 					return true;
 				}
