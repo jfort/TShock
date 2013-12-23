@@ -123,7 +123,7 @@ namespace TShockAPI
         /// <summary>
         /// The last time the player changed their team or pvp status.  
         /// </summary>
-		public DateTime LastPvpChange;
+		public DateTime LastPvPTeamChange;
 
         /// <summary>
         /// Temp points for use in regions and other plugins.
@@ -155,8 +155,6 @@ namespace TShockAPI
         /// Whether the player should see logs.
         /// </summary>
 		public bool DisplayLogs = true;
-
-		public Vector2 oldSpawn = Vector2.Zero;
 
         /// <summary>
         /// The last player that the player whispered with (to or from).
@@ -209,8 +207,6 @@ namespace TShockAPI
         /// Whether the player is muted or not.
         /// </summary>
 		public bool mute;
-
-		public bool TpLock;
 
 		private Player FakePlayer;
 
@@ -454,6 +450,8 @@ namespace TShockAPI
 		{
 			get { return (int) (Y/16); }
 		}
+
+		public bool TpLock;
 
 		public bool InventorySlotAvailable
 		{
@@ -1017,6 +1015,18 @@ namespace TShockAPI
 		public void SetBloodMoon(bool bloodMoon)
 		{
 			Main.bloodMoon = bloodMoon;
+			SetTime(false, 0);
+		}
+
+		public void SetSnowMoon(bool snowMoon)
+		{
+			Main.snowMoon = snowMoon;
+			SetTime(false, 0);
+		}
+
+		public void SetPumpkinMoon(bool pumpkinMoon)
+		{
+			Main.pumpkinMoon = pumpkinMoon;
 			SetTime(false, 0);
 		}
 		

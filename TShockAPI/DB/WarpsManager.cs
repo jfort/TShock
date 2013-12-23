@@ -76,7 +76,38 @@ namespace TShockAPI.DB
 			return false;
 		}
 
+<<<<<<< HEAD
 		public Warp FindWarp(string name)
+=======
+		/// <summary>
+		/// Finds the warp with the given name.
+		/// </summary>
+		/// <param name="warpName">The name.</param>
+		/// <returns>The warp, if it exists, or else null.</returns>
+		public Warp Find(string warpName)
+		{
+			return Warps.FirstOrDefault(w => String.Equals(w.Name, warpName, StringComparison.OrdinalIgnoreCase));
+		}
+		/// <summary>
+		/// Finds the warp with the given name.
+		/// </summary>
+		/// <param name="warpName">The name.</param>
+		/// <returns>The warp, if it exists, or else null.</returns>
+		[Obsolete]
+		public Warp FindWarp(string warpName)
+		{
+			return Warps.FirstOrDefault(w => String.Equals(w.Name, warpName, StringComparison.OrdinalIgnoreCase));
+		}
+
+		/// <summary>
+		/// Sets the position of a warp.
+		/// </summary>
+		/// <param name="warpName">The warp name.</param>
+		/// <param name="x">The X position.</param>
+		/// <param name="y">The Y position.</param>
+		/// <returns>Whether the operation suceeded.</returns>
+		public bool Position(string warpName, int x, int y)
+>>>>>>> refs/remotes/NyxStudios/general-devel
 		{
 			try
 			{
@@ -164,10 +195,34 @@ namespace TShockAPI.DB
 
 	public class Warp
 	{
+<<<<<<< HEAD
 		public Vector2 WarpPos { get; set; }
 		public string WarpName { get; set; }
 		public string WorldWarpID { get; set; }
 		public string Private { get; set; }
+=======
+		/// <summary>
+		/// Gets or sets the name.
+		/// </summary>
+		public string Name { get; set; }
+		/// <summary>
+		/// Gets or sets the warp's privacy state.
+		/// </summary>
+		public bool IsPrivate { get; set; }
+		/// <summary>
+		/// Gets or sets the position.
+		/// </summary>
+		public Point Position { get; set; }
+		/// <summary>
+		/// Gets or sets the position.
+		/// </summary>
+		[Obsolete]
+		public Vector2 WarpPos
+		{
+			get { return new Vector2(Position.X, Position.Y); }
+			set { Position = new Point((int)value.X, (int)value.Y); }
+		}
+>>>>>>> refs/remotes/NyxStudios/general-devel
 
 		public Warp(Vector2 warppos, string name, string worldid, string hidden)
 		{
@@ -176,7 +231,13 @@ namespace TShockAPI.DB
 			WorldWarpID = worldid;
 			Private = hidden;
 		}
-
+		[Obsolete]
+		public Warp(Vector2 position, string name, bool isPrivate = false)
+		{
+			Name = name;
+			WarpPos = position;
+			IsPrivate = isPrivate;
+		}
 		public Warp()
 		{
 			WarpPos = Vector2.Zero;

@@ -893,6 +893,7 @@ namespace TShockAPI
 				return;
 			}
 
+<<<<<<< HEAD
 			var ipban = Bans.GetBanByIp(player.IP);
 			Ban ban = null;
 			if (ipban != null && Config.EnableIPBans)
@@ -910,6 +911,8 @@ namespace TShockAPI
 			    }
 			}
 
+=======
+>>>>>>> refs/remotes/NyxStudios/general-devel
 			if (!FileTools.OnWhitelist(player.IP))
 			{
 				Utils.ForceKick(player, Config.WhitelistKickReason, true, false);
@@ -945,7 +948,13 @@ namespace TShockAPI
 			
 			if (Config.KickEmptyUUID && String.IsNullOrWhiteSpace(player.UUID))
 			{
+<<<<<<< HEAD
 				Utils.ForceKick(player, "Tvuj klient neodesila identifikaci UUID. Tento server UUID vyzaduje.");
+=======
+				Utils.ForceKick(player, "Your client did not send a UUID, this server is not configured to accept such a client.", true);
+				args.Handled = true;
+				return;
+>>>>>>> refs/remotes/NyxStudios/general-devel
 			}
 
 			Ban ban = null;
@@ -971,8 +980,41 @@ namespace TShockAPI
 			    if (!Utils.HasBanExpired(ban))
 			    {
 			        DateTime exp;
+<<<<<<< HEAD
 			        string duration = DateTime.TryParse(ban.Expiration, out exp) ? String.Format("until {0}", exp.ToString("G")) : "forever";
                     Utils.ForceKick(player, string.Format("Jsi zabanovan na {0}: {1}", duration, ban.Reason), true, false);
+=======
+					if (!DateTime.TryParse(ban.Expiration, out exp))
+					{
+						player.Disconnect("You are banned forever: " + ban.Reason);
+					}
+					else
+					{
+						TimeSpan ts = exp - DateTime.UtcNow;
+						int months = ts.Days / 30;
+						if (months > 0)
+						{
+							player.Disconnect(String.Format("You are banned for {0} month{1} and {2} day{3}: {4}",
+								months, months == 1 ? "" : "s", ts.Days, ts.Days == 1 ? "" : "s", ban.Reason));
+						}
+						else if (ts.Days > 0)
+						{
+							player.Disconnect(String.Format("You are banned for {0} day{1} and {2} hour{3}: {4}",
+								ts.Days, ts.Days == 1 ? "": "s", ts.Hours, ts.Hours == 1 ? "" : "s", ban.Reason));
+						}
+						else if (ts.Hours > 0)
+						{
+							player.Disconnect(String.Format("You are banned for {0} hour{1} and {2} minute{3}: {4}",
+								ts.Hours, ts.Hours == 1 ? "" : "s", ts.Minutes, ts.Minutes == 1 ? "" : "s", ban.Reason));
+						}
+						else
+						{
+							player.Disconnect(String.Format("You are banned for {0} minute{1}: {2}",
+								ts.Minutes, ts.Minutes == 1 ? "" : "s", ban.Reason));
+						}
+
+					}
+>>>>>>> refs/remotes/NyxStudios/general-devel
 					args.Handled = true;
 			    }
 			}            
@@ -980,17 +1022,21 @@ namespace TShockAPI
 
 		private void OnLeave(LeaveEventArgs args)
 		{
-
 			var tsplr = Players[args.Who];
 			Players[args.Who] = null;
 
 			if (tsplr != null && tsplr.ReceivedInfo)
 			{
 				if (!tsplr.SilentKickInProgress && tsplr.State >= 3)
+<<<<<<< HEAD
 				{
 					Utils.Broadcast("Hrac " + tsplr.Name + " odesel.", Color.Yellow);
 				}
 				Log.Info(string.Format("{0} se odpoji.", tsplr.Name));
+=======
+					Utils.Broadcast(tsplr.Name + " has left.", Color.Yellow);
+				Log.Info(string.Format("{0} disconnected.", tsplr.Name));
+>>>>>>> refs/remotes/NyxStudios/general-devel
 
 				if (tsplr.IsLoggedIn && !tsplr.IgnoreActionsForClearingTrashCan && TShock.Config.ServerSideCharacter && (!tsplr.Dead || tsplr.TPlayer.difficulty != 2))
 				{
@@ -998,7 +1044,7 @@ namespace TShockAPI
 					CharacterDB.InsertPlayerData(tsplr);
 				}
 
-				if ((Config.RememberLeavePos) &&(!tsplr.LoginHarassed))
+				if (Config.RememberLeavePos && !tsplr.LoginHarassed)
 				{
 					RememberedPos.InsertLeavePos(tsplr.Name, tsplr.IP, (int) (tsplr.X/16), (int) (tsplr.Y/16));
 				}
@@ -1177,13 +1223,36 @@ namespace TShockAPI
 				args.Handled = true;
 				return;
 			}
-			player.LoginMS= DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
-			
+
+			player.LoginMS = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+
+			if (TShock.Config.EnableGeoIP && TShock.Geo != null)
+			{
+				Log.Info(string.Format("{0} ({1}) from '{2}' group from '{3}' joined. ({4}/{5})", player.Name, player.IP,
+									   player.Group.Name, player.Country, TShock.Utils.ActivePlayers(),
+									   TShock.Config.MaxSlots));
+				if (!player.SilentJoinInProgress)
+					TShock.Utils.Broadcast(string.Format("{0} ({1}) has joined.", player.Name, player.Country), Color.Yellow);
+			}
+			else
+			{
+				Log.Info(string.Format("{0} ({1}) from '{2}' group joined. ({3}/{4})", player.Name, player.IP,
+									   player.Group.Name, TShock.Utils.ActivePlayers(), TShock.Config.MaxSlots));
+				if (!player.SilentJoinInProgress)
+					TShock.Utils.Broadcast(player.Name + " has joined.", Color.Yellow);
+			}
+
+			if (TShock.Config.DisplayIPToAdmins)
+				TShock.Utils.SendLogs(string.Format("{0} has joined. IP: {1}", player.Name, player.IP), Color.Blue);
+
 			Utils.ShowFileToUser(player, "motd.txt");
 
-			if (Config.PvPMode == "always" && !player.TPlayer.hostile)
+			string pvpMode = Config.PvPMode.ToLowerInvariant();
+			if (pvpMode == "always")
 			{
-				player.SendMessage("PvP is forced! Enable PvP else you can't do anything!", Color.Red);
+				player.TPlayer.hostile = true;
+				player.SendData(PacketTypes.TogglePvp, "", player.Index);
+				TSPlayer.All.SendData(PacketTypes.TogglePvp, "", player.Index);
 			}
 
 			if (!player.IsLoggedIn)
@@ -1193,7 +1262,7 @@ namespace TShockAPI
 					player.SendMessage(
 						player.IgnoreActionsForInventory = "Server side characters is enabled! Please /register or /login to play!",
 						Color.Red);
-						player.LoginHarassed = true;
+					player.LoginHarassed = true;
 				}
 				else if (Config.RequireLogin)
 				{
@@ -1202,14 +1271,14 @@ namespace TShockAPI
 				}
 			}
 
-			player.LastNetPosition = new Vector2(Main.spawnTileX*16f, Main.spawnTileY*16f);
+			player.LastNetPosition = new Vector2(Main.spawnTileX * 16f, Main.spawnTileY * 16f);
 
-            if (Config.RememberLeavePos && (RememberedPos.GetLeavePos(player.Name, player.IP) != Vector2.Zero) && !player.LoginHarassed)
+			if (Config.RememberLeavePos && (RememberedPos.GetLeavePos(player.Name, player.IP) != Vector2.Zero) && !player.LoginHarassed)
 			{
-			    player.RPPending=3;
-			    player.SendMessage("You will be teleported to your last known location...", Color.Red);
+				player.RPPending = 3;
+				player.SendMessage("You will be teleported to your last known location...", Color.Red);
 			}
-			
+
 			args.Handled = true;
 		}
 
@@ -1733,7 +1802,7 @@ namespace TShockAPI
 
 		public static bool CheckIgnores(TSPlayer player)
 		{
-			return Config.PvPMode == "always" && !player.TPlayer.hostile || player.IgnoreActionsForInventory != "none" || player.IgnoreActionsForCheating != "none" || player.IgnoreActionsForDisabledArmor != "none" || player.IgnoreActionsForClearingTrashCan || !player.IsLoggedIn && Config.RequireLogin;;
+			return player.IgnoreActionsForInventory != "none" || player.IgnoreActionsForCheating != "none" || player.IgnoreActionsForDisabledArmor != "none" || player.IgnoreActionsForClearingTrashCan || !player.IsLoggedIn && Config.RequireLogin;;
 		}
 
 		public void OnConfigRead(ConfigFile file)
